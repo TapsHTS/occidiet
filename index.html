@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>1400 kcal - Modélisation Gastronomique</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['"Cormorant Garamond"', 'serif'],
+                        sans: ['"Outfit"', 'sans-serif'],
+                    },
+                    colors: {
+                        stone: {
+                            50: '#fdfbf7',
+                            100: '#f4f1eb',
+                            800: '#2c2825',
+                            900: '#1a1816',
+                        },
+                        terracotta: '#d48c70',
+                        olive: '#8e9b72',
+                        mustard: '#e5b96b',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-out forwards',
+                        'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #fdfbf7;
+            color: #2c2825;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Subtle noise texture for editorial feel */
+        .noise-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Hide scrollbar for horizontal lists but keep functionality */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .glass-panel {
+            background: rgba(253, 251, 247, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(44, 40, 37, 0.05);
+        }
+
+        .image-placeholder {
+            background-size: 200% 200%;
+            animation: gradientMove 5s ease infinite;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="noise-overlay"></div>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // --- DATA GENERATION ---
+        const rawData = [
+            // Printemps
+            { id: 1, s: "Printemps", k: 420, n: "Pancakes protéinés aux jeunes pousses d'épinards" },
+            { id: 2, s: "Printemps", k: 410, n: "Œufs cocotte printaniers au saumon et poireau" },
+            { id: 3, s: "Printemps", k: 440, n: "Risotto allégé aux asperges vertes du terroir" },
+            { id: 4, s: "Printemps", k: 400, n: "Velouté de carottes primeur et pommes de terre" },
+            { id: 5, s: "Printemps", k: 420, n: "Salade d'artichauts poivrade, fèves et Pélardon" },
+            { id: 6, s: "Printemps", k: 410, n: "Rouleaux de printemps arc-en-ciel végétariens" },
+            { id: 7, s: "Printemps", k: 440, n: "Dos de truite sur tombée de fanes et radis poêlés" },
+            { id: 8, s: "Printemps", k: 400, n: "Omelette volumique aux blettes et oignons nouveaux" },
+            { id: 9, s: "Printemps", k: 410, n: "Salade protéinée aux pousses d'épinards et fraises" },
+            { id: 10, s: "Printemps", k: 450, n: "Sauté de porc maigre aux navets nouveaux glacés" },
+            { id: 11, s: "Printemps", k: 390, n: "Râpée de chou-rave, pomme verte et dinde effilochée" },
+            { id: 12, s: "Printemps", k: 400, n: "Cabillaud en croûte d'herbes et jardinière de pois" },
+            { id: 13, s: "Printemps", k: 440, n: "Wok de volaille aux haricots mange-tout et sésame" },
+            { id: 14, s: "Printemps", k: 430, n: "Bowl printanier végétarien quinoa, asperges et œuf" },
+            { id: 15, s: "Printemps", k: 420, n: "Salade de lentilles vertes, rondelles de radis et feta" },
+            { id: 16, s: "Printemps", k: 430, n: "Mijoté de veau léger aux carottes primeur et estragon" },
+            { id: 17, s: "Printemps", k: 400, n: "Tarte fine aux courgettes primeur sur pâte filo" },
+            { id: 18, s: "Printemps", k: 410, n: "Tartare de saumon à la ciboulette et concombre cru" },
+            { id: 19, s: "Printemps", k: 430, n: "Salade d'épeautre aux petits oignons blancs et thon" },
+            { id: 20, s: "Printemps", k: 400, n: "Filet de loup de mer rôti, fenouil et pomelo" },
+            { id: 21, s: "Printemps", k: 410, n: "Mini-frittatas aux épinards et fromage de chèvre" },
+            { id: 22, s: "Printemps", k: 420, n: "Blanc de volaille farci à la rhubarbe et gingembre" },
+            { id: 23, s: "Printemps", k: 410, n: "Papillote de lieu noir aux poireaux nouveaux et soja" },
+            { id: 24, s: "Printemps", k: 380, n: "Faux taboulé de chou-fleur, herbes et crevettes" },
+            { id: 25, s: "Printemps", k: 450, n: "Gnocchis poêlés aux asperges vertes et parmesan" },
+            // Été
+            { id: 26, s: "Été", k: 430, n: "Salade Niçoise authentique du patrimoine azuréen" },
+            { id: 27, s: "Été", k: 420, n: "Brochettes de poulet au citron et courgettes grillées" },
+            { id: 28, s: "Été", k: 400, n: "Ratatouille méridionale express et œufs pochés" },
+            { id: 29, s: "Été", k: 410, n: "Salade Grecque traditionnelle et dés de pastèque" },
+            { id: 30, s: "Été", k: 450, n: "Sardines de Méditerranée grillées au citron" },
+            { id: 31, s: "Été", k: 420, n: "Ceviche de loup de mer aux pêches et piment doux" },
+            { id: 32, s: "Été", k: 410, n: "Bruschettas italiennes aux tomates cerises et ail" },
+            { id: 33, s: "Été", k: 440, n: "Taboulé oriental au poulet épicé et herbes fraîches" },
+            { id: 34, s: "Été", k: 400, n: "Brochettes de crevettes à l'ail et ananas rôti" },
+            { id: 35, s: "Été", k: 430, n: "Tacos légers aux crevettes et salsa crue de mangue" },
+            { id: 36, s: "Été", k: 390, n: "Tzatziki bowl au concombre, menthe et blanc de volaille" },
+            { id: 37, s: "Été", k: 420, n: "Salade rafraîchissante melon, jambon cru et mozzarella" },
+            { id: 38, s: "Été", k: 400, n: "Caviar d'aubergines express et lanières de poulet" },
+            { id: 39, s: "Été", k: 410, n: "Moules marinières estivales et pain complet" },
+            { id: 40, s: "Été", k: 440, n: "Pâtes froides au pesto allégé et pignons de pin" },
+            { id: 41, s: "Été", k: 450, n: "Satay de porc maigre au barbecue et courgettes" },
+            { id: 42, s: "Été", k: 390, n: "Gaspacho andalou authentique et œufs durs" },
+            { id: 43, s: "Été", k: 440, n: "Bol méditerranéen poulet, quinoa et olives Lucques" },
+            { id: 44, s: "Été", k: 450, n: "Gnocchis One-Pot aux tomates fraîches et mozzarella" },
+            { id: 45, s: "Été", k: 400, n: "Salade de pêches rôties, feta AOP et dinde fumée" },
+            { id: 46, s: "Été", k: 420, n: "Dorade au four, tomates grappes rôties et fenouil" },
+            { id: 47, s: "Été", k: 380, n: "Rouleaux de légumes d'été frais au thon" },
+            { id: 48, s: "Été", k: 440, n: "Gratin d'aubergines allégé à la pulpe de tomate" },
+            { id: 49, s: "Été", k: 410, n: "Salade d'épeautre aux poivrons grillés et chèvre frais" },
+            { id: 50, s: "Été", k: 420, n: "Poêlée de calamars persillés, ail et tomates" },
+            // Automne
+            { id: 51, s: "Automne", k: 430, n: "Crumble d'hiver à la courge butternut et raclette" },
+            { id: 52, s: "Automne", k: 400, n: "Velouté de potimarron aux éclats de châtaignes" },
+            { id: 53, s: "Automne", k: 410, n: "Omelette forestière d'automne au chèvre des Cévennes" },
+            { id: 54, s: "Automne", k: 440, n: "Risotto aux chanterelles et pointe de bleu d'Auvergne" },
+            { id: 55, s: "Automne", k: 430, n: "Courge butternut farcie au chèvre et quinoa blond" },
+            { id: 56, s: "Automne", k: 420, n: "Soupe épaisse de lentilles corail, courge et épices" },
+            { id: 57, s: "Automne", k: 440, n: "Pâtes complètes aux champignons forestiers et crème" },
+            { id: 58, s: "Automne", k: 410, n: "Croque-monsieur végétarien aux champignons et emmental" },
+            { id: 59, s: "Automne", k: 430, n: "Tarte rustique aux champignons sans moule et œuf" },
+            { id: 60, s: "Automne", k: 400, n: "Salade tiède de betteraves rôties, feta et noix" },
+            { id: 61, s: "Automne", k: 410, n: "Faux taboulé d'automne au chou-fleur et porc grillé" },
+            { id: 62, s: "Automne", k: 420, n: "Pâtes de lentilles vertes et salade de mâche aux noix" },
+            { id: 63, s: "Automne", k: 410, n: "Velouté de pois cassés, poireaux et œuf dur émietté" },
+            { id: 64, s: "Automne", k: 440, n: "Filet mignon à la moutarde en cocotte et champignons" },
+            { id: 65, s: "Automne", k: 450, n: "Magret de canard à l'orange (portion sous contrôle)" },
+            { id: 66, s: "Automne", k: 420, n: "Poisson blanc et légumes racines d'automne à la plaque" },
+            { id: 67, s: "Automne", k: 430, n: "Tarte fine aux poires d'automne et pointe de roquefort" },
+            { id: 68, s: "Automne", k: 390, n: "Quiche sans pâte aux poireaux fondants et chèvre" },
+            { id: 69, s: "Automne", k: 440, n: "Salade d'épeautre, pesto de cheddar et courges" },
+            { id: 70, s: "Automne", k: 420, n: "Poulet rôti aux herbes d'automne et frites de panais" },
+            { id: 71, s: "Automne", k: 390, n: "Endives braisées au jambon blanc et béchamel légère" },
+            { id: 72, s: "Automne", k: 450, n: "Boudin noir aux pommes (portion ajustée et contrôlée)" },
+            { id: 73, s: "Automne", k: 430, n: "Sauté de dinde aux marrons entiers et carottes" },
+            { id: 74, s: "Automne", k: 410, n: "Poêlée paysanne choux de Bruxelles et lardons maigres" },
+            { id: 75, s: "Automne", k: 420, n: "Riz complet aux cœurs d'artichauts et tomates confites" },
+            // Hiver
+            { id: 76, s: "Hiver", k: 420, n: "Brandade de cabillaud maison revisitée et allégée" },
+            { id: 77, s: "Hiver", k: 430, n: "Tielle Sétoise déconstruite en chausson léger" },
+            { id: 78, s: "Hiver", k: 450, n: "Bœuf bourguignon maigre et carottes fondantes" },
+            { id: 79, s: "Hiver", k: 390, n: "Velouté soyeux de chou-fleur, pomme et Saint-Jacques" },
+            { id: 80, s: "Hiver", k: 420, n: "Salade de chou rouge croquant aux noix et poulet" },
+            { id: 81, s: "Hiver", k: 440, n: "Curry de légumes racines d'hiver et tofu soyeux" },
+            { id: 82, s: "Hiver", k: 380, n: "Cabillaud aux légumes racines façon potée marine" },
+            { id: 83, s: "Hiver", k: 450, n: "Saumon rôti sur lit de frites de carottes au four" },
+            { id: 84, s: "Hiver", k: 430, n: "Gratin de poireaux d'hiver au saumon et parmesan" },
+            { id: 85, s: "Hiver", k: 410, n: "Soupe de poulet réconfortante à la patate douce" },
+            { id: 86, s: "Hiver", k: 440, n: "Salade tiède de pois chiches, avocat et légumes rôtis" },
+            { id: 87, s: "Hiver", k: 390, n: "Légumes d'hiver rôtis au sirop d'érable et bacon de dinde" },
+            { id: 88, s: "Hiver", k: 430, n: "Blanquette de veau allégée aux petits légumes" },
+            { id: 89, s: "Hiver", k: 440, n: "Ramen au poulet maison et légumes croquants" },
+            { id: 90, s: "Hiver", k: 390, n: "Salade d'endives aux oranges et éclats de noix fraîches" },
+            { id: 91, s: "Hiver", k: 410, n: "Poireaux rôtis entiers au four et œuf mollet coulant" },
+            { id: 92, s: "Hiver", k: 420, n: "Chou blanc braisé, sauce crémeuse au poivre et porc" },
+            { id: 93, s: "Hiver", k: 410, n: "Fondue de poireaux aux crevettes et pointe de curry" },
+            { id: 94, s: "Hiver", k: 450, n: "Cake salé occitan aux olives vertes et Pélardon" },
+            { id: 95, s: "Hiver", k: 400, n: "Pot-au-feu de la mer (poisson blanc et légumes clairs)" },
+            { id: 96, s: "Hiver", k: 420, n: "Risotto de petit épeautre aux cèpes séchés réhydratés" },
+            { id: 97, s: "Hiver", k: 430, n: "Tarte fine aux oignons caramélisés et anchois" },
+            { id: 98, s: "Hiver", k: 410, n: "Purée de céleri-rave, noisettes et blanc de volaille" },
+            { id: 99, s: "Hiver", k: 400, n: "Salade d'agrumes, fenouil et lanières de saumon fumé" },
+            { id: 100, s: "Hiver", k: 420, n: "Galette de flocons de sarrasin et œuf miroir aux épinards" }
+        ];
+
+        // Intelligent Keyword Generator based on title analysis
+        const generateTags = (name) => {
+            const tags = [];
+            const lower = name.toLowerCase();
+            
+            if (/(poulet|dinde|volaille|canard)/.test(lower)) tags.push("Volaille");
+            if (/(saumon|truite|cabillaud|loup|dorade|sardines|ceviche|crevettes|moules|calamars|anchois|saint-jacques|poisson)/.test(lower)) tags.push("Produits de la mer");
+            if (/(porc|veau|bœuf|jambon|bacon|boudin|lardons)/.test(lower)) tags.push("Viande");
+            if (/(tofu|quinoa|lentilles|pois|fèves|végétarien)/.test(lower)) tags.push("Végétarien");
+            if (/(œuf|omelette|frittata|œufs)/.test(lower)) tags.push("Œufs");
+            if (/(pâtes|riz|risotto|gnocchis|taboulé|nouilles|épeautre)/.test(lower)) tags.push("Glucides complexes");
+            if (/(salade|velouté|soupe|gaspacho|bouillon)/.test(lower)) tags.push("Léger & Hydratant");
+            if (/(chèvre|feta|pélardon|mozzarella|parmesan|fromage|roquefort|bleu|raclette)/.test(lower)) tags.push("Fromage");
+            if (/(poireau|chou|courge|aubergine|carotte|asperge)/.test(lower)) tags.push("Légumes");
+            
+            return tags.slice(0, 3); // Max 3 tags for UI elegance
+        };
+
+        const getDishImage = (id) => {
+            const images = [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+            ];
+            return images[id % images.length];
+        };
+
+        const dishes = rawData.map(d => ({
+            id: d.id,
+            name: d.n,
+            season: d.s,
+            kcal: d.k,
+            tags: generateTags(d.n),
+            image: getDishImage(d.id)
+        }));
+
+        // --- ICONS ---
+        const SearchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
+        const DicesIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><path d="M9 9h.01"></path><path d="M15 9h.01"></path><path d="M9 15h.01"></path><path d="M15 15h.01"></path></svg>;
+        const CloseIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
+        const SparkleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path></svg>;
+        const LoaderIcon = () => <svg className="animate-spin" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>;
+
+        // --- API UTILS ---
+        const fetchWithRetry = async (url, options, retries = 5, delay = 1000) => {
+            try {
+                const res = await fetch(url, options);
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                return await res.json();
+            } catch (e) {
+                if (retries > 0) {
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return fetchWithRetry(url, options, retries - 1, delay * 2);
+                }
+                throw e;
+            }
+        };
+
+        // --- COMPONENTS ---
+
+        const DishCard = ({ dish, isFeatured = false, onClick }) => {
+            return (
+                <div 
+                    onClick={onClick}
+                    className={`group flex flex-col bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-500 border border-stone-100 ${isFeatured ? 'scale-100' : 'animate-fade-in cursor-pointer hover:-translate-y-1'}`}
+                >
+                    <div className="relative w-full aspect-[4/3] bg-stone-100 overflow-hidden">
+                        <img 
+                            src={dish.image} 
+                            alt={dish.name} 
+                            loading="lazy"
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-stone-900/40 via-transparent to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        
+                        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-semibold tracking-wider text-stone-800 shadow-sm z-10">
+                            {dish.kcal} KCAL
+                        </div>
+                    </div>
+
+                    <div className="p-6 flex flex-col flex-grow">
+                        <div className="text-xs font-bold tracking-widest uppercase text-terracotta mb-2">
+                            {dish.season}
+                        </div>
+                        <h3 className="font-serif text-2xl leading-tight mb-4 flex-grow text-stone-900 group-hover:text-terracotta transition-colors">
+                            {dish.name}
+                        </h3>
+                        <div className="flex flex-wrap gap-2 mt-auto">
+                            {dish.tags.map(tag => (
+                                <span key={tag} className="px-3 py-1 bg-stone-50 text-stone-600 text-xs rounded-full border border-stone-100">
+                                    {tag}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const DishModal = ({ dish, onClose, isRandomInsight = false }) => {
+            const [recipe, setRecipe] = useState(null);
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState(null);
+            const [customRequest, setCustomRequest] = useState("");
+            const [isCustomizing, setIsCustomizing] = useState(false);
+
+            useEffect(() => {
+                // Reset states when dish changes
+                setRecipe(null);
+                setError(null);
+                setCustomRequest("");
+                setIsCustomizing(false);
+            }, [dish]);
+
+            const fetchRecipe = async (modifier = null) => {
+                setLoading(true);
+                setError(null);
+                try {
+                    const apiKey = ""; // La clé est automatiquement injectée
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                    
+                    let promptText = `Tu es un chef gastronomique et diététicien clinicien. Crée la recette détaillée pour le plat "${dish.name}". Le repas complet doit faire environ ${dish.kcal} calories.`;
+                    if (modifier) {
+                        promptText += `\n\nCONTRAINTE REQUISE : Le client a demandé la modification suivante : "${modifier}". Adapte impérativement la recette et les ingrédients pour respecter cette demande, tout en gardant l'apport autour de ${dish.kcal} kcal. Mentionne le changement dans l'astuce.`;
+                    }
+
+                    const payload = {
+                        contents: [{ parts: [{ text: promptText }] }],
+                        generationConfig: {
+                            responseMimeType: "application/json",
+                            responseSchema: {
+                                type: "OBJECT",
+                                properties: {
+                                    ingredients: { type: "ARRAY", items: { type: "STRING" }, description: "Liste des ingrédients avec quantités précises (ex: 150g de poulet)" },
+                                    instructions: { type: "ARRAY", items: { type: "STRING" }, description: "Étapes de préparation claires et concises" },
+                                    astuce: { type: "STRING", description: "Une courte astuce diététique ou de dressage" }
+                                },
+                                required: ["ingredients", "instructions", "astuce"]
+                            }
+                        }
+                    };
+
+                    const data = await fetchWithRetry(url, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const contentText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (!contentText) throw new Error("Réponse vide de l'IA");
+                    
+                    setRecipe(JSON.parse(contentText));
+                } catch (e) {
+                    console.error(e);
+                    setError("Impossible de générer la recette. L'intelligence artificielle est momentanément indisponible.");
+                } finally {
+                    setLoading(false);
+                    setIsCustomizing(false);
+                }
+            };
+
+            if (!dish) return null;
+
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+                    <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md" onClick={onClose}></div>
+                    <div className="relative w-full max-w-3xl bg-white rounded-[2rem] shadow-2xl overflow-hidden animate-slide-up my-auto max-h-[90vh] flex flex-col">
+                        
+                        <button onClick={onClose} className="absolute top-4 right-4 z-20 p-2 bg-white/50 backdrop-blur-md rounded-full text-stone-800 hover:bg-white transition-colors">
+                            <CloseIcon />
+                        </button>
+                        
+                        <div className="flex-shrink-0">
+                            <DishCard dish={dish} isFeatured={true} />
+                        </div>
+
+                        <div className="p-6 sm:p-10 bg-white overflow-y-auto flex-grow">
+                            {!recipe && !loading && !error && (
+                                <div className="text-center py-4">
+                                    {isRandomInsight && <p className="font-sans text-stone-500 text-sm mb-6">Une sélection parfaitement équilibrée pour votre objectif de 1400 kcal journaliers.</p>}
+                                    <button 
+                                        onClick={() => fetchRecipe()} 
+                                        className="w-full sm:w-auto px-8 py-4 bg-stone-900 text-stone-50 rounded-2xl font-semibold tracking-wide hover:bg-stone-800 transition-colors flex items-center justify-center gap-3 mx-auto shadow-lg"
+                                    >
+                                        <SparkleIcon />
+                                        Générer la Recette Détaillée (IA)
+                                    </button>
+                                </div>
+                            )}
+
+                            {loading && (
+                                <div className="flex flex-col items-center justify-center py-12 text-terracotta">
+                                    <LoaderIcon />
+                                    <p className="mt-4 font-serif text-xl italic text-stone-600">Conception culinaire en cours...</p>
+                                </div>
+                            )}
+
+                            {error && (
+                                <div className="text-center py-8 text-red-500">
+                                    <p>{error}</p>
+                                    <button onClick={() => fetchRecipe(customRequest || null)} className="mt-4 underline text-stone-800 hover:text-terracotta">Réessayer</button>
+                                </div>
+                            )}
+
+                            {recipe && !loading && (
+                                <div className="animate-fade-in text-left">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                        <div className="md:col-span-1">
+                                            <h4 className="font-serif text-2xl font-semibold mb-4 text-olive border-b border-stone-100 pb-2">Ingrédients</h4>
+                                            <ul className="space-y-3">
+                                                {recipe.ingredients.map((ing, i) => (
+                                                    <li key={i} className="text-sm text-stone-700 flex items-start gap-2">
+                                                        <span className="text-terracotta mt-0.5">•</span>
+                                                        <span>{ing}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <div className="md:col-span-2">
+                                            <h4 className="font-serif text-2xl font-semibold mb-4 text-terracotta border-b border-stone-100 pb-2">Préparation</h4>
+                                            <ol className="space-y-4">
+                                                {recipe.instructions.map((step, i) => (
+                                                    <li key={i} className="text-sm text-stone-700 leading-relaxed flex items-start gap-3">
+                                                        <span className="font-serif font-bold text-stone-300 text-lg leading-none mt-0.5">{i+1}.</span>
+                                                        <span>{step}</span>
+                                                    </li>
+                                                ))}
+                                            </ol>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="mt-8 p-5 bg-stone-50 border border-stone-100 rounded-2xl shadow-inner">
+                                        <p className="text-sm text-stone-800"><span className="font-bold text-mustard">💡 Astuce du Chef :</span> {recipe.astuce}</p>
+                                    </div>
+
+                                    {/* LLM Modifier Feature */}
+                                    <div className="mt-8 pt-8 border-t border-stone-100">
+                                        <h4 className="font-serif text-xl mb-4 text-stone-900">Adapter cette recette</h4>
+                                        <div className="flex flex-col sm:flex-row gap-3">
+                                            <input 
+                                                type="text" 
+                                                placeholder="Ex: Rendre vegan, sans gluten, remplacer le poulet par du tofu..." 
+                                                className="flex-grow px-5 py-3 border border-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-olive/30 focus:border-olive transition-all"
+                                                value={customRequest}
+                                                onChange={e => setCustomRequest(e.target.value)}
+                                                disabled={isCustomizing}
+                                                onKeyDown={e => e.key === 'Enter' && customRequest && !isCustomizing && fetchRecipe(customRequest)}
+                                            />
+                                            <button 
+                                                onClick={() => { setIsCustomizing(true); fetchRecipe(customRequest); }}
+                                                disabled={!customRequest || isCustomizing}
+                                                className="px-6 py-3 bg-olive text-white rounded-xl text-sm font-medium hover:bg-[#7a865f] disabled:opacity-50 transition-colors flex items-center justify-center gap-2 flex-shrink-0"
+                                            >
+                                                {isCustomizing ? <LoaderIcon /> : <SparkleIcon />}
+                                                {isCustomizing ? "Adaptation..." : "Adapter (IA)"}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [searchQuery, setSearchQuery] = useState("");
+            const [activeSeason, setActiveSeason] = useState("Tous");
+            const [dishModal, setDishModal] = useState(null);
+
+            const seasons = ["Tous", "Printemps", "Été", "Automne", "Hiver"];
+
+            const filteredDishes = useMemo(() => {
+                return dishes.filter(dish => {
+                    const matchesSearch = dish.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                          dish.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+                    const matchesSeason = activeSeason === "Tous" || dish.season === activeSeason;
+                    return matchesSearch && matchesSeason;
+                });
+            }, [searchQuery, activeSeason]);
+
+            const triggerRandom = () => {
+                const randomIdx = Math.floor(Math.random() * dishes.length);
+                setDishModal({ dish: dishes[randomIdx], isRandom: true });
+            };
+
+            return (
+                <div className="min-h-screen relative pb-24 sm:pb-12">
+                    {/* Header */}
+                    <header className="glass-panel sticky top-0 z-30 pt-12 pb-6 px-6 sm:px-12">
+                        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+                            <div>
+                                <h2 className="text-sm font-bold tracking-[0.2em] text-olive uppercase mb-2">Occitanie Diététique</h2>
+                                <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl text-stone-900 leading-none">
+                                    L'Architecture<br/><span className="italic text-terracotta">du Déficit.</span>
+                                </h1>
+                            </div>
+                            <p className="font-sans text-stone-500 max-w-xs text-sm sm:text-right">
+                                100 repas cliniquement modélisés entre 400 et 450 kcal pour une restriction optimale.
+                            </p>
+                        </div>
+                    </header>
+
+                    {/* Main Content */}
+                    <main className="max-w-7xl mx-auto px-6 sm:px-12 pt-8">
+                        
+                        {/* Controls */}
+                        <div className="flex flex-col lg:flex-row gap-6 mb-12">
+                            {/* Search */}
+                            <div className="relative flex-grow">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-stone-400">
+                                    <SearchIcon />
+                                </div>
+                                <input 
+                                    type="text" 
+                                    placeholder="Rechercher par ingrédient, nom, mot-clé (ex: Saumon, Végétarien)..."
+                                    className="w-full pl-12 pr-4 py-4 bg-white border border-stone-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-olive/20 focus:border-olive transition-all font-sans text-stone-800 placeholder-stone-400"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </div>
+
+                            {/* Filters */}
+                            <div className="flex overflow-x-auto no-scrollbar gap-3 pb-2 lg:pb-0 items-center">
+                                {seasons.map(season => (
+                                    <button
+                                        key={season}
+                                        onClick={() => setActiveSeason(season)}
+                                        className={`whitespace-nowrap px-6 py-3.5 rounded-2xl font-medium transition-all duration-300 ${
+                                            activeSeason === season 
+                                            ? 'bg-stone-900 text-stone-50 shadow-md' 
+                                            : 'bg-white text-stone-600 border border-stone-200 hover:border-stone-300 hover:bg-stone-50'
+                                        }`}
+                                    >
+                                        {season}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Grid */}
+                        {filteredDishes.length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
+                                {filteredDishes.map((dish, index) => (
+                                    <div key={dish.id} style={{ animationDelay: `${index * 50}ms` }} className="animate-fade-in opacity-0">
+                                        <DishCard dish={dish} onClick={() => setDishModal({ dish, isRandom: false })} />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="py-24 text-center">
+                                <p className="font-serif text-3xl text-stone-400 mb-2">Aucun plat ne correspond à vos critères.</p>
+                                <button onClick={() => {setSearchQuery(''); setActiveSeason('Tous');}} className="text-terracotta underline font-medium">Réinitialiser la recherche</button>
+                            </div>
+                        )}
+                    </main>
+
+                    {/* Floating Random Button (Mobile & Desktop) */}
+                    <div className="fixed bottom-6 right-6 sm:bottom-10 sm:right-10 z-40">
+                        <button 
+                            onClick={triggerRandom}
+                            className="group flex items-center justify-center gap-3 bg-terracotta text-white px-6 py-4 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 hover:bg-[#c47c61] transition-all duration-300"
+                        >
+                            <DicesIcon />
+                            <span className="font-semibold tracking-wide hidden sm:block">Inspiration</span>
+                        </button>
+                    </div>
+
+                    {/* Dish Modal w/ AI capabilities */}
+                    {dishModal && <DishModal dish={dishModal.dish} isRandomInsight={dishModal.isRandom} onClose={() => setDishModal(null)} />}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

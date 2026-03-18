@@ -198,9 +198,10 @@
         };
 
         const dishes = rawData.map(d => {
-            // L'URL EXACTE DU PLAT, GÉNÉRÉE SUR MESURE
-            const exactPrompt = encodeURIComponent(`${d.n}, photographie culinaire, très réaliste, restaurant gastronomique, 4k`);
-            const exactImageUrl = `https://image.pollinations.ai/prompt/${exactPrompt}?width=600&height=450&nologo=true`;
+            // Image locale pré-générée (voir generate_images.py)
+            // Fallback automatique vers Pollinations si le fichier n'existe pas
+            const localImageUrl = `images/dish-${d.id}.jpg`;
+            const fallbackUrl = `https://gen.pollinations.ai/image/${encodeURIComponent(d.n + ', photographie culinaire, très réaliste, restaurant gastronomique, 4k')}?width=600&height=450&model=flux`;
             
             return { 
                 id: d.id, 
@@ -208,7 +209,8 @@
                 season: d.s, 
                 kcal: d.k, 
                 tags: generateTags(d.n), 
-                image: exactImageUrl
+                image: localImageUrl,
+                fallback: fallbackUrl
             };
         });
 
@@ -248,6 +250,7 @@
                             alt={dish.name} 
                             loading="lazy"
                             onLoad={() => setIsLoaded(true)}
+                            onError={(e) => { if (dish.fallback && e.target.src !== dish.fallback) { e.target.src = dish.fallback; } }}
                             className={`absolute z-10 inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
                         />
                         

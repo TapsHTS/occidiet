@@ -649,7 +649,7 @@ sci:"Les glucides lents à très faible index glycémique du sarrasin garantisse
 
         const dishes = rawData.map(d => {
             const exactPrompt = encodeURIComponent(`${d.n}, photographie culinaire, très réaliste, restaurant gastronomique, 4k`);
-            const exactImageUrl = `${window.location.href}/images/dish-${d.id}.jpg`;
+            const exactImageUrl = `${window.location.href}/images/dish-${d.id}.jpg` || `https://github.com/TapsHTS/occidiet/blob/main/images/dish-${d.id}.jpg`;
             return {
                 ...d,
                 name: d.n, season: d.s, kcal: d.k,

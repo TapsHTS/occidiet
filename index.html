@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="manifest" href="https://tapshts.github.io/occidiet/manifest.json">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://tapshts.github.io/occidiet/apple-touch-icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="1400 kcal">
     <meta name="theme-color" content="#fdfbf7">
+    <base href="https://tapshts.github.io/occidiet/">
     <title>1400 kcal - Modélisation Gastronomique</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -649,7 +650,7 @@ sci:"Les glucides lents à très faible index glycémique du sarrasin garantisse
 
         const dishes = rawData.map(d => {
             const exactPrompt = encodeURIComponent(`${d.n}, photographie culinaire, très réaliste, restaurant gastronomique, 4k`);
-            const exactImageUrl = `${window.location.href}/images/dish-${d.id}.jpg` || `https://github.com/TapsHTS/occidiet/blob/main/images/dish-${d.id}.jpg`;
+            const exactImageUrl = `https://tapshts.github.io/occidiet/images/dish-${d.id}.jpg`;
             return {
                 ...d,
                 name: d.n, season: d.s, kcal: d.k,

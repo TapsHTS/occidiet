@@ -1,0 +1,23 @@
+{
+  "name": "1400 kcal — Modélisation Gastronomique",
+  "short_name": "1400 kcal",
+  "description": "100 repas entre 400 et 450 kcal pour une restriction optimale",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fdfbf7",
+  "theme_color": "#fdfbf7",
+  "icons": [
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

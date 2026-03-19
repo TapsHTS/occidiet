@@ -2,22 +2,21 @@
 <html lang="fr" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="1400 kcal">
+    <meta name="theme-color" content="#fdfbf7">
     <title>1400 kcal - Modélisation Gastronomique</title>
-    
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- React & ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
     <script>
         tailwind.config = {
             theme: {
@@ -27,24 +26,25 @@
                         sans: ['"Outfit"', 'sans-serif'],
                     },
                     colors: {
-                        stone: { 50: '#fdfbf7', 100: '#f4f1eb', 800: '#2c2825', 900: '#1a1816' },
+                        stone: { 50: '#fdfbf7', 100: '#f4f1eb', 200: '#e8e4db', 800: '#2c2825', 900: '#1a1816' },
                         terracotta: '#d48c70',
                         olive: '#8e9b72',
                         mustard: '#e5b96b',
                     },
                     animation: {
                         'fade-in': 'fadeIn 0.6s ease-out forwards',
-                        'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'slide-up-full': 'slideUpFull 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards',
                     },
                     keyframes: {
                         fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-                        slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        slideUpFull: { '0%': { transform: 'translateY(100%)' }, '100%': { transform: 'translateY(0)' } },
                     }
                 }
             }
         }
     </script>
-
     <style>
         body { background-color: #fdfbf7; color: #2c2825; -webkit-font-smoothing: antialiased; }
         .noise-overlay {
@@ -54,17 +54,61 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .glass-panel { background: rgba(253, 251, 247, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(44, 40, 37, 0.05); }
-        
-        /* Loading skeleton for images */
         .img-skeleton {
             background: linear-gradient(90deg, #f4f1eb 25%, #e8e4db 50%, #f4f1eb 75%);
             background-size: 200% 100%;
             animation: loadingSkeleton 1.5s infinite;
         }
+        :root {
+            --sat: env(safe-area-inset-top, 0px);
+            --sab: env(safe-area-inset-bottom, 0px);
+            --sal: env(safe-area-inset-left, 0px);
+            --sar: env(safe-area-inset-right, 0px);
+        }
+        body {
+            padding-top: var(--sat);
+            padding-bottom: var(--sab);
+            padding-left: var(--sal);
+            padding-right: var(--sar);
+        }
+        .glass-panel {
+            padding-top: calc(var(--sat) + 3rem) !important;
+        }
+        .fixed.bottom-6 { bottom: calc(var(--sab) + 1.5rem) !important; }
+        .fixed.bottom-10 { bottom: calc(var(--sab) + 2.5rem) !important; }
+        html { overscroll-behavior: none; }
         @keyframes loadingSkeleton {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
+
+        /* Recipe modal mobile fullscreen */
+        .recipe-modal-scroll {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+        }
+        .recipe-modal-scroll::-webkit-scrollbar { display: none; }
+
+        /* Checked ingredient */
+        .ing-checked { text-decoration: line-through; opacity: 0.45; }
+
+        /* Step number circle */
+        .step-num {
+            min-width: 2rem; height: 2rem;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 9999px; font-weight: 600; font-size: 0.75rem;
+        }
+
+        /* Nutrition pill */
+        .nutri-pill {
+            display: inline-flex; align-items: center; gap: 0.25rem;
+            padding: 0.375rem 0.75rem; border-radius: 9999px;
+            font-size: 0.75rem; font-weight: 500;
+        }
+
+        /* Tab underline */
+        .tab-active { border-bottom: 2.5px solid #d48c70; color: #2c2825; font-weight: 600; }
+        .tab-inactive { border-bottom: 2.5px solid transparent; color: #9ca3af; }
     </style>
 </head>
 <body>
@@ -72,200 +116,583 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+        const { useState, useEffect, useMemo, useCallback } = React;
 
-        // --- DATA GENERATION ---
+        // ══════════════════════════════════════════════════
+        //  RECIPE DATABASE — 100 plats avec recettes complètes
+        // ══════════════════════════════════════════════════
         const rawData = [
-            // Printemps
-            { id: 1, s: "Printemps", k: 420, n: "Pancakes protéinés aux jeunes pousses d'épinards" },
-            { id: 2, s: "Printemps", k: 410, n: "Œufs cocotte printaniers au saumon et poireau" },
-            { id: 3, s: "Printemps", k: 440, n: "Risotto allégé aux asperges vertes du terroir" },
-            { id: 4, s: "Printemps", k: 400, n: "Velouté de carottes primeur et pommes de terre" },
-            { id: 5, s: "Printemps", k: 420, n: "Salade d'artichauts poivrade, fèves et Pélardon" },
-            { id: 6, s: "Printemps", k: 410, n: "Rouleaux de printemps arc-en-ciel végétariens" },
-            { id: 7, s: "Printemps", k: 440, n: "Dos de truite sur tombée de fanes et radis poêlés" },
-            { id: 8, s: "Printemps", k: 400, n: "Omelette volumique aux blettes et oignons nouveaux" },
-            { id: 9, s: "Printemps", k: 410, n: "Salade protéinée aux pousses d'épinards et fraises" },
-            { id: 10, s: "Printemps", k: 450, n: "Sauté de porc maigre aux navets nouveaux glacés" },
-            { id: 11, s: "Printemps", k: 390, n: "Râpée de chou-rave, pomme verte et dinde effilochée" },
-            { id: 12, s: "Printemps", k: 400, n: "Cabillaud en croûte d'herbes et jardinière de pois" },
-            { id: 13, s: "Printemps", k: 440, n: "Wok de volaille aux haricots mange-tout et sésame" },
-            { id: 14, s: "Printemps", k: 430, n: "Bowl printanier végétarien quinoa, asperges et œuf" },
-            { id: 15, s: "Printemps", k: 420, n: "Salade de lentilles vertes, rondelles de radis et feta" },
-            { id: 16, s: "Printemps", k: 430, n: "Mijoté de veau léger aux carottes primeur et estragon" },
-            { id: 17, s: "Printemps", k: 400, n: "Tarte fine aux courgettes primeur sur pâte filo" },
-            { id: 18, s: "Printemps", k: 410, n: "Tartare de saumon à la ciboulette et concombre cru" },
-            { id: 19, s: "Printemps", k: 430, n: "Salade d'épeautre aux petits oignons blancs et thon" },
-            { id: 20, s: "Printemps", k: 400, n: "Filet de loup de mer rôti, fenouil et pomelo" },
-            { id: 21, s: "Printemps", k: 410, n: "Mini-frittatas aux épinards et fromage de chèvre" },
-            { id: 22, s: "Printemps", k: 420, n: "Blanc de volaille farci à la rhubarbe et gingembre" },
-            { id: 23, s: "Printemps", k: 410, n: "Papillote de lieu noir aux poireaux nouveaux et soja" },
-            { id: 24, s: "Printemps", k: 380, n: "Faux taboulé de chou-fleur, herbes et crevettes" },
-            { id: 25, s: "Printemps", k: 450, n: "Gnocchis poêlés aux asperges vertes et parmesan" },
-            // Été
-            { id: 26, s: "Été", k: 430, n: "Salade Niçoise authentique du patrimoine azuréen" },
-            { id: 27, s: "Été", k: 420, n: "Brochettes de poulet au citron et courgettes grillées" },
-            { id: 28, s: "Été", k: 400, n: "Ratatouille méridionale express et œufs pochés" },
-            { id: 29, s: "Été", k: 410, n: "Salade Grecque traditionnelle et dés de pastèque" },
-            { id: 30, s: "Été", k: 450, n: "Sardines de Méditerranée grillées au citron" },
-            { id: 31, s: "Été", k: 420, n: "Ceviche de loup de mer aux pêches et piment doux" },
-            { id: 32, s: "Été", k: 410, n: "Bruschettas italiennes aux tomates cerises et ail" },
-            { id: 33, s: "Été", k: 440, n: "Taboulé oriental au poulet épicé et herbes fraîches" },
-            { id: 34, s: "Été", k: 400, n: "Brochettes de crevettes à l'ail et ananas rôti" },
-            { id: 35, s: "Été", k: 430, n: "Tacos légers aux crevettes et salsa crue de mangue" },
-            { id: 36, s: "Été", k: 390, n: "Tzatziki bowl au concombre, menthe et blanc de volaille" },
-            { id: 37, s: "Été", k: 420, n: "Salade rafraîchissante melon, jambon cru et mozzarella" },
-            { id: 38, s: "Été", k: 400, n: "Caviar d'aubergines express et lanières de poulet" },
-            { id: 39, s: "Été", k: 410, n: "Moules marinières estivales et pain complet" },
-            { id: 40, s: "Été", k: 440, n: "Pâtes froides au pesto allégé et pignons de pin" },
-            { id: 41, s: "Été", k: 450, n: "Satay de porc maigre au barbecue et courgettes" },
-            { id: 42, s: "Été", k: 390, n: "Gaspacho andalou authentique et œufs durs" },
-            { id: 43, s: "Été", k: 440, n: "Bol méditerranéen poulet, quinoa et olives Lucques" },
-            { id: 44, s: "Été", k: 450, n: "Gnocchis One-Pot aux tomates fraîches et mozzarella" },
-            { id: 45, s: "Été", k: 400, n: "Salade de pêches rôties, feta AOP et dinde fumée" },
-            { id: 46, s: "Été", k: 420, n: "Dorade au four, tomates grappes rôties et fenouil" },
-            { id: 47, s: "Été", k: 380, n: "Rouleaux de légumes d'été frais au thon" },
-            { id: 48, s: "Été", k: 440, n: "Gratin d'aubergines allégé à la pulpe de tomate" },
-            { id: 49, s: "Été", k: 410, n: "Salade d'épeautre aux poivrons grillés et chèvre frais" },
-            { id: 50, s: "Été", k: 420, n: "Poêlée de calamars persillés, ail et tomates" },
-            // Automne
-            { id: 51, s: "Automne", k: 430, n: "Crumble d'hiver à la courge butternut et raclette" },
-            { id: 52, s: "Automne", k: 400, n: "Velouté de potimarron aux éclats de châtaignes" },
-            { id: 53, s: "Automne", k: 410, n: "Omelette forestière d'automne au chèvre des Cévennes" },
-            { id: 54, s: "Automne", k: 440, n: "Risotto aux chanterelles et pointe de bleu d'Auvergne" },
-            { id: 55, s: "Automne", k: 430, n: "Courge butternut farcie au chèvre et quinoa blond" },
-            { id: 56, s: "Automne", k: 420, n: "Soupe épaisse de lentilles corail, courge et épices" },
-            { id: 57, s: "Automne", k: 440, n: "Pâtes complètes aux champignons forestiers et crème" },
-            { id: 58, s: "Automne", k: 410, n: "Croque-monsieur végétarien aux champignons et emmental" },
-            { id: 59, s: "Automne", k: 430, n: "Tarte rustique aux champignons sans moule et œuf" },
-            { id: 60, s: "Automne", k: 400, n: "Salade tiède de betteraves rôties, feta et noix" },
-            { id: 61, s: "Automne", k: 410, n: "Faux taboulé d'automne au chou-fleur et porc grillé" },
-            { id: 62, s: "Automne", k: 420, n: "Pâtes de lentilles vertes et salade de mâche aux noix" },
-            { id: 63, s: "Automne", k: 410, n: "Velouté de pois cassés, poireaux et œuf dur émietté" },
-            { id: 64, s: "Automne", k: 440, n: "Filet mignon à la moutarde en cocotte et champignons" },
-            { id: 65, s: "Automne", k: 450, n: "Magret de canard à l'orange (portion sous contrôle)" },
-            { id: 66, s: "Automne", k: 420, n: "Poisson blanc et légumes racines d'automne à la plaque" },
-            { id: 67, s: "Automne", k: 430, n: "Tarte fine aux poires d'automne et pointe de roquefort" },
-            { id: 68, s: "Automne", k: 390, n: "Quiche sans pâte aux poireaux fondants et chèvre" },
-            { id: 69, s: "Automne", k: 440, n: "Salade d'épeautre, pesto de cheddar et courges" },
-            { id: 70, s: "Automne", k: 420, n: "Poulet rôti aux herbes d'automne et frites de panais" },
-            { id: 71, s: "Automne", k: 390, n: "Endives braisées au jambon blanc et béchamel légère" },
-            { id: 72, s: "Automne", k: 450, n: "Boudin noir aux pommes (portion ajustée et contrôlée)" },
-            { id: 73, s: "Automne", k: 430, n: "Sauté de dinde aux marrons entiers et carottes" },
-            { id: 74, s: "Automne", k: 410, n: "Poêlée paysanne choux de Bruxelles et lardons maigres" },
-            { id: 75, s: "Automne", k: 420, n: "Riz complet aux cœurs d'artichauts et tomates confites" },
-            // Hiver
-            { id: 76, s: "Hiver", k: 420, n: "Brandade de cabillaud maison revisitée et allégée" },
-            { id: 77, s: "Hiver", k: 430, n: "Tielle Sétoise déconstruite en chausson léger" },
-            { id: 78, s: "Hiver", k: 450, n: "Bœuf bourguignon maigre et carottes fondantes" },
-            { id: 79, s: "Hiver", k: 390, n: "Velouté soyeux de chou-fleur, pomme et Saint-Jacques" },
-            { id: 80, s: "Hiver", k: 420, n: "Salade de chou rouge croquant aux noix et poulet" },
-            { id: 81, s: "Hiver", k: 440, n: "Curry de légumes racines d'hiver et tofu soyeux" },
-            { id: 82, s: "Hiver", k: 380, n: "Cabillaud aux légumes racines façon potée marine" },
-            { id: 83, s: "Hiver", k: 450, n: "Saumon rôti sur lit de frites de carottes au four" },
-            { id: 84, s: "Hiver", k: 430, n: "Gratin de poireaux d'hiver au saumon et parmesan" },
-            { id: 85, s: "Hiver", k: 410, n: "Soupe de poulet réconfortante à la patate douce" },
-            { id: 86, s: "Hiver", k: 440, n: "Salade tiède de pois chiches, avocat et légumes rôtis" },
-            { id: 87, s: "Hiver", k: 390, n: "Légumes d'hiver rôtis au sirop d'érable et bacon de dinde" },
-            { id: 88, s: "Hiver", k: 430, n: "Blanquette de veau allégée aux petits légumes" },
-            { id: 89, s: "Hiver", k: 440, n: "Ramen au poulet maison et légumes croquants" },
-            { id: 90, s: "Hiver", k: 390, n: "Salade d'endives aux oranges et éclats de noix fraîches" },
-            { id: 91, s: "Hiver", k: 410, n: "Poireaux rôtis entiers au four et œuf mollet coulant" },
-            { id: 92, s: "Hiver", k: 420, n: "Chou blanc braisé, sauce crémeuse au poivre et porc" },
-            { id: 93, s: "Hiver", k: 410, n: "Fondue de poireaux aux crevettes et pointe de curry" },
-            { id: 94, s: "Hiver", k: 450, n: "Cake salé occitan aux olives vertes et Pélardon" },
-            { id: 95, s: "Hiver", k: 400, n: "Pot-au-feu de la mer (poisson blanc et légumes clairs)" },
-            { id: 96, s: "Hiver", k: 420, n: "Risotto de petit épeautre aux cèpes séchés réhydratés" },
-            { id: 97, s: "Hiver", k: 430, n: "Tarte fine aux oignons caramélisés et anchois" },
-            { id: 98, s: "Hiver", k: 410, n: "Purée de céleri-rave, noisettes et blanc de volaille" },
-            { id: 99, s: "Hiver", k: 400, n: "Salade d'agrumes, fenouil et lanières de saumon fumé" },
-            { id: 100, s: "Hiver", k: 420, n: "Galette de flocons de sarrasin et œuf miroir aux épinards" }
+// ─── PRINTEMPS ───
+{id:1,s:"Printemps",k:420,n:"Pancakes protéinés aux jeunes pousses d'épinards",
+ing:["100g pousses d'épinards frais","2 œufs entiers","100g yaourt grec 0%","40g farine complète","Levure chimique","Sel, poivre"],
+prep:["Placer tous les ingrédients dans un blender et mixer 1 minute jusqu'à obtenir une pâte lisse et verte.","Chauffer une poêle antiadhésive essuyée avec un sopalin imbibé d'une goutte d'huile.","Verser de petites louches de pâte. Cuire 2 min par face.","Servir chaud, idéalement tartiné avec un houmous léger ou 30g de chèvre frais."],
+sci:"La caséine du yaourt grec offre une digestion biphasique très lente. L'épinard apporte un volume aqueux massif pour un coût calorique virtuellement nul, distendant les parois de l'estomac de manière mécanique."},
+
+{id:2,s:"Printemps",k:410,n:"Œufs cocotte printaniers au saumon et poireau",
+ing:["2 œufs","1 blanc de poireau","60g saumon fumé","1 c.à.s crème fraîche allégée (15%)","10g parmesan","Aneth"],
+prep:["Émincer finement le blanc de poireau et le faire fondre à la poêle avec un fond d'eau.","Dans des ramequins, disposer la fondue de poireau au fond, ajouter le saumon fumé en lanières.","Casser un œuf par ramequin, ajouter une demi-cuillère de crème et saupoudrer de parmesan.","Cuire au bain-marie au four à 180°C pendant 12 à 15 minutes (blanc figé, jaune coulant)."],
+sci:"La matrice lipidique du saumon (oméga-3) ralentit la vidange gastrique. Les fibres prébiotiques du poireau nourrissent le microbiote intestinal, favorisant la sécrétion de butyrate, puissant régulateur de l'appétit."},
+
+{id:3,s:"Printemps",k:440,n:"Risotto allégé aux asperges vertes du terroir",
+ing:["50g riz Arborio cru","150g pointes d'asperges vertes","Bouillon de volaille dégraissé","20g parmesan affiné","100g émincé de volaille","Oignon"],
+prep:["Faire suer l'oignon haché à sec, ajouter le riz nacré.","Déglacer avec une louche de bouillon chaud. Ajouter le bouillon louche par louche pendant 18 min.","À 5 min de la fin, ajouter les asperges coupées en tronçons (blanchies 2 min).","Hors du feu, lier avec le parmesan et intégrer la volaille grillée à part."],
+sci:"La restriction de la charge glucidique (50g de riz cru) est compensée par le volume imposant des asperges, légume diurétique par excellence. Le parmesan apporte la signature umami nécessaire à la satiété sensorielle."},
+
+{id:4,s:"Printemps",k:400,n:"Velouté de carottes primeur et pommes de terre au tofu",
+ing:["150g pommes de terre nouvelles","2 carottes primeur","Gousse d'ail","Bouillon végétal","100g de tofu soyeux"],
+prep:["Peler et couper les légumes en cubes. Les immerger dans le bouillon avec l'ail écrasé et cuire 20 min.","Mixer le tout au mixeur plongeant.","Couper le tofu soyeux en dés, le griller à sec avec un peu de sauce soja.","Déposer le tofu grillé sur le velouté au moment du service."],
+sci:"Le mixage en velouté augmente la viscosité du bol alimentaire. Le tofu abaisse la charge glycémique, empêchant l'effondrement glycémique classique après l'ingestion de soupes."},
+
+{id:5,s:"Printemps",k:420,n:"Salade d'artichauts poivrade, fèves et Pélardon",
+ing:["3 fonds d'artichauts","80g fèves fraîches écossées","30g de Pélardon des Cévennes","10g d'huile d'olive","Jus de citron","Lit de roquette"],
+prep:["Tourner les artichauts pour ne garder que le cœur, les émincer finement et les citronner.","Blanchir les fèves 3 minutes, les rafraîchir et les peler.","Dresser sur un lit massif de roquette, disposer les artichauts et les fèves.","Émietter le Pélardon et arroser de vinaigrette (huile d'olive + citron)."],
+sci:"Les fèves combinent protéines végétales et amidon résistant. Les 30g de Pélardon délivrent des acides gras essentiels à chaîne moyenne pour un plaisir gustatif optimisé sans excès."},
+
+{id:6,s:"Printemps",k:410,n:"Rouleaux de printemps arc-en-ciel végétariens",
+ing:["3 feuilles de riz","Chou rouge râpé","Julienne de carottes","Concombre en bâtonnets","80g tofu ferme","Sauce : 15g purée de cacahuète, eau, citron"],
+prep:["Tremper les feuilles de riz dans l'eau tiède pour les ramollir.","Disposer au centre le chou rouge, la carotte, le concombre et des bâtonnets de tofu poêlés.","Replier les bords et rouler serré.","Diluer la purée de cacahuète avec de l'eau tiède et du citron pour la sauce."],
+sci:"Les glucides complexes de la feuille de riz, couplés aux lipides insaturés de la purée d'arachide et aux protéines du soja, assurent une libération d'énergie linéaire et durable."},
+
+{id:7,s:"Printemps",k:400,n:"Dos de truite sur tombée de fanes et radis poêlés",
+ing:["120g filet de truite","Fanes d'une botte de radis","150g radis roses","100g quinoa cuit","Jus de citron"],
+prep:["Cuire le quinoa à l'eau. Laver les radis en conservant leurs fanes.","Faire revenir les radis entiers avec un fond d'eau 10 min jusqu'à ce qu'ils soient fondants.","Ajouter les fanes en fin de cuisson pour les faire tomber.","Cuire la truite à la vapeur douce 8 minutes. Dresser sur le lit de fanes et de quinoa."],
+sci:"La cuisson du radis neutralise ses isothiocyanates piquants et le rend fondant. La truite fournit les protéines structurelles et les acides gras protecteurs."},
+
+{id:8,s:"Printemps",k:440,n:"Omelette volumique aux blettes et oignons nouveaux",
+ing:["2 œufs entiers","2 blancs d'œufs supplémentaires","150g feuilles et côtes de blettes","Oignons cébettes","40g pain de seigle"],
+prep:["Séparer le vert du blanc des blettes. Émincer les côtes et les cuire 10 min à l'eau bouillante.","Faire suer la cébette, ajouter les côtes cuites et le vert émincé.","Battre les 2 œufs entiers avec les 2 blancs, assaisonner, verser sur les légumes.","Cuire à feu doux à couvert. Servir avec le pain de seigle."],
+sci:"L'ajout de blancs d'œufs décuple le volume et l'apport en acides aminés sans impact lipidique. Le pain de seigle exige une mastication longue et laborieuse."},
+
+{id:9,s:"Printemps",k:410,n:"Salade protéinée aux épinards et fraises",
+ing:["Grande quantité de jeunes pousses d'épinards","100g fraises fraîches","120g filet de poulet","15g cerneaux de noix","Réduction de vinaigre balsamique"],
+prep:["Aplatir le filet de poulet, le griller à sec, puis le tailler en aiguillettes.","Équeuter et couper les fraises en quartiers.","Mélanger les pousses d'épinards, les fraises, les noix et le poulet tiède.","Arroser d'une réduction de vinaigre balsamique (vinaigre bouilli jusqu'à consistance sirupeuse)."],
+sci:"Le contraste sucré-salé masque la perception de la restriction calorique. La vitamine C des fraises catalyse l'absorption du fer végétal des épinards."},
+
+{id:10,s:"Printemps",k:450,n:"Sauté de porc maigre aux navets nouveaux glacés",
+ing:["120g filet mignon de porc","150g petits navets printaniers","1 c.à.c miel","Sauce soja","Oignon","100g riz complet"],
+prep:["Couper le filet mignon en dés. Peler et couper les navets en rondelles.","Mélanger sauce soja, miel et oignon émincé avec la viande pour mariner.","Faire revenir les navets avec un filet d'eau, retirer. Saisir la viande marinée.","Rajouter les navets et la marinade. Mijoter 20 min à couvert. Servir avec le riz complet."],
+sci:"Le filet mignon est la coupe la plus maigre du porc. Le micro-glaçage au miel offre une caramélisation satisfaisante (réaction de Maillard) tout en respectant le budget glucidique."},
+
+{id:11,s:"Printemps",k:390,n:"Râpée de chou-rave, pomme verte et dinde effilochée",
+ing:["150g chou-rave cru","½ pomme Granny Smith","120g blanc de dinde cuit","Yaourt bulgare","1 c.à.c moutarde ancienne","Citron"],
+prep:["Peler le chou-rave et le râper finement. Couper la pomme en julienne ou la râper.","Effilocher le blanc de dinde préalablement poché ou rôti.","Mélanger le yaourt avec la moutarde et un trait de citron.","Amalgamer l'ensemble des ingrédients avec la sauce dans un grand bol."],
+sci:"Le croquant extrême du chou-rave cru impose un travail mécanique des mâchoires prolongé, laissant le temps à l'hypothalamus d'enregistrer les signaux de satiété précoce."},
+
+{id:12,s:"Printemps",k:400,n:"Cabillaud en croûte d'herbes et jardinière de pois",
+ing:["130g dos de cabillaud","10g chapelure fine","Persil, cerfeuil","100g petits pois frais écossés","100g jeunes carottes"],
+prep:["Mélanger la chapelure avec les herbes hachées. Presser sur le dos de cabillaud.","Enfourner à 200°C pendant 12 à 15 min.","Cuire les petits pois et les carottes en bâtonnets à la vapeur douce 10 min.","Servir le poisson croustillant sur les légumes vapeur."],
+sci:"Les petits pois agissent comme légume fibreux et féculent doux. Le cabillaud (moins de 2% de lipides) offre une très haute teneur protidique idéale pour la plénitude."},
+
+{id:13,s:"Printemps",k:440,n:"Wok de volaille aux haricots mange-tout et sésame",
+ing:["120g émincé de poulet","150g haricots gourmands (mange-tout)","1 c.à.s graines de sésame","100g nouilles de sarrasin (soba)","Sauce soja"],
+prep:["Cuire les nouilles soba à l'eau bouillante 4 min, égoutter.","Dans un wok très chaud, saisir l'émincé de poulet sans matière grasse.","Ajouter les haricots mange-tout, faire sauter 5 min pour qu'ils restent croquants.","Déglacer avec la sauce soja, intégrer les nouilles et saupoudrer de sésame torréfié."],
+sci:"Les fibres solubles des haricots gourmands et insolubles du sarrasin optimisent le péristaltisme intestinal. Le sésame apporte calcium biodisponible et lipides monoinsaturés."},
+
+{id:14,s:"Printemps",k:430,n:"Bowl printanier végétarien quinoa, asperges et œuf",
+ing:["100g quinoa blond cuit","100g têtes d'asperges","1 œuf entier","30g houmous maison","Jus de citron pressé","Coriandre"],
+prep:["Rincer et cuire le quinoa par absorption.","Cuire l'œuf exactement 6 minutes pour un œuf mollet, refroidir dans l'eau glacée.","Cuire les asperges à la vapeur 5 min.","Disposer le quinoa tiède, les asperges, le houmous, et l'œuf mollet ouvert au centre."],
+sci:"Le quinoa est l'une des rares protéines végétales contenant tous les acides aminés essentiels. Associé à l'œuf, il offre un aminogramme parfait pour la masse musculaire."},
+
+{id:15,s:"Printemps",k:420,n:"Salade de lentilles vertes, rondelles de radis et feta",
+ing:["120g lentilles vertes (poids cuit)","Radis roses","30g feta AOP émiettée","Ciboulette","1 c.à.s huile d'olive","Vinaigre de cidre"],
+prep:["Cuire les lentilles avec un bouquet garni, égoutter et refroidir au réfrigérateur (étape cruciale).","Couper les radis en très fines rondelles.","Mélanger les lentilles froides avec les radis, la ciboulette, l'huile d'olive et le vinaigre.","Parsemer la feta émiettée sur le dessus au moment de servir."],
+sci:"Le refroidissement des lentilles crée de l'amidon résistant qui abaisse l'indice glycémique du repas, prévenant les pics d'insuline responsables du stockage adipeux."},
+
+{id:16,s:"Printemps",k:430,n:"Mijoté de veau léger aux carottes primeur et estragon",
+ing:["120g noix de veau en dés","200g jeunes carottes fanes","100g pommes de terre","Bouillon de légumes","Estragon frais"],
+prep:["Faire dorer les dés de veau à sec dans une cocotte antiadhésive.","Déglacer avec une louche de bouillon. Ajouter les carottes et les pommes de terre.","Verser le bouillon à hauteur, ajouter l'estragon. Couvrir hermétiquement.","Laisser mijoter à feu très doux pendant 40 minutes."],
+sci:"La cuisson à l'étouffée attendrit les fibres collagéniques sans aucun ajout de matières grasses. Les carottes primeur libèrent leur bêta-carotène antioxydant dans le jus."},
+
+{id:17,s:"Printemps",k:400,n:"Tarte fine aux courgettes primeur sur pâte filo",
+ing:["3 feuilles de pâte filo","Petites courgettes nouvelles","1 œuf","50g ricotta","Basilic frais"],
+prep:["Superposer les 3 feuilles de pâte filo dans un petit moule à tarte (sans beurrer).","Battre l'œuf avec la ricotta, assaisonner, étaler sur le fond.","Disposer les rondelles de courgettes tranchées à la mandoline en rosace.","Enfourner à 180°C pendant 20 minutes jusqu'à ce que les bords soient dorés."],
+sci:"3 feuilles de pâte filo ultra-fines remplacent une pâte brisée classique, économisant près de 150 kcal tout en conservant une texture croustillante."},
+
+{id:18,s:"Printemps",k:410,n:"Tartare de saumon à la ciboulette et concombre cru",
+ing:["100g saumon frais qualité sashimi","¼ concombre","Jus de citron vert","Ciboulette, aneth","40g pain de seigle"],
+prep:["Placer le saumon 15 min au congélateur pour faciliter la découpe.","Tailler en très petits cubes au couteau. Couper le concombre en brunoise, faire dégorger au sel.","Mélanger poisson et concombre avec le jus de citron vert et les herbes.","Servir immédiatement avec la tranche de pain de seigle toastée."],
+sci:"L'acidité citrique coagule partiellement les protéines du poisson, facilitant le travail enzymatique gastrique. Le pain de seigle garantit une libération d'énergie très lente."},
+
+{id:19,s:"Printemps",k:430,n:"Salade d'épeautre aux petits oignons blancs et thon",
+ing:["100g petit épeautre cuit al dente","1 boîte thon au naturel (100g égoutté)","Oignons blancs printaniers","Tomates cerises","Citron"],
+prep:["Faire tremper l'épeautre la veille, puis le cuire 45 min à l'eau bouillante salée. Égoutter et refroidir.","Mélanger l'épeautre avec le thon émietté grossièrement.","Ajouter les petits oignons blancs coupés finement (avec la tige verte) et les tomates cerises coupées en deux.","Assaisonner d'un filet de jus de citron et de poivre noir."],
+sci:"L'épeautre est une céréale ancienne dont la matrice protéique rustique nécessite un effort enzymatique supérieur, augmentant l'effet thermogénique et la durée de la satiété."},
+
+{id:20,s:"Printemps",k:400,n:"Filet de loup de mer rôti, fenouil et pomelo",
+ing:["130g filet de loup de mer","150g bulbe de fenouil","Suprêmes d'un demi-pomelo","5g huile d'olive (1 c.à.c)","Aneth"],
+prep:["Émincer le fenouil finement à la mandoline.","Peler le pomelo à vif pour extraire les suprêmes.","Mélanger le fenouil et le pomelo en salade.","Cuire le filet à la poêle avec l'huile d'olive (cuisson unilatérale côté peau). Servir sur la salade froide."],
+sci:"Le loup de Méditerranée est sublimé par l'anethol du fenouil. L'acide ascorbique du pomelo protège les acides gras cellulaires de l'oxydation lors de la digestion."},
+
+{id:21,s:"Printemps",k:410,n:"Mini-frittatas aux épinards et fromage de chèvre",
+ing:["2 œufs entiers","100g d'épinards frais","30g de bûche de chèvre","Sel, poivre","Grand bol de salade verte"],
+prep:["Faire tomber les épinards dans une poêle sans graisse, bien les presser.","Battre les œufs. Dans des moules à muffins en silicone, répartir épinards et chèvre en dés.","Verser les œufs battus par-dessus.","Enfourner à 180°C pendant 15 minutes jusqu'à ce qu'elles soient gonflées."],
+sci:"Repas à très forte densité protéique et calcique. La cuisson en moules silicone élimine le besoin d'huiler, contrôlant rigoureusement le bilan lipidique."},
+
+{id:22,s:"Printemps",k:420,n:"Blanc de volaille farci à la rhubarbe et gingembre",
+ing:["120g filet de volaille","1 bâton de rhubarbe","Gingembre frais râpé","100g semoule complète cuite"],
+prep:["Peler et couper la rhubarbe, la compoter avec le gingembre et un fond d'eau (sans sucre).","Ouvrir le filet en portefeuille, farcir avec la compotée acidulée.","Refermer avec des cure-dents. Rôtir au four à 200°C pendant 20 minutes.","Servir avec la semoule."],
+sci:"L'acidité malique de la rhubarbe attendrit les fibres musculaires de la volaille, offrant un plat juteux malgré l'absence de sauce grasse ou de crème."},
+
+{id:23,s:"Printemps",k:410,n:"Papillote de lieu noir aux poireaux nouveaux et soja",
+ing:["150g filet lieu noir","150g émincé de poireaux primeur","1 c.à.s crème de soja","Trait de vin blanc sec","100g de riz blanc cuit"],
+prep:["Découper un carré de papier sulfurisé. Disposer une base de poireaux émincés crus.","Déposer le filet de poisson par-dessus.","Arroser de crème de soja, vin blanc, saler et poivrer. Refermer hermétiquement.","Cuire au four à 200°C pendant 15 minutes. Servir avec le riz."],
+sci:"L'environnement fermé de la papillote cuit le poisson dans son propre exsudat tout en préservant le volume des légumes, garantissant une plénitude stomacale maximale."},
+
+{id:24,s:"Printemps",k:380,n:"Faux taboulé de chou-fleur, herbes et crevettes",
+ing:["150g bouquets de chou-fleur cru","Menthe fraîche, persil plat","120g crevettes décortiquées","Jus de citron","1 c.à.s huile d'olive"],
+prep:["Râper ou mixer le chou-fleur cru par impulsions pour obtenir une texture de semoule.","Hacher massivement les herbes (un grand bol).","Mélanger la semoule de chou-fleur, les herbes, les crevettes coupées en deux, le citron et l'huile.","Laisser mariner au frais."],
+sci:"La substitution de la semoule de blé par du chou-fleur cru réduit l'apport glucidique de plus de 70%, assurant une satiété mécanique absolue pour très peu de calories."},
+
+{id:25,s:"Printemps",k:450,n:"Gnocchis poêlés aux asperges vertes et parmesan",
+ing:["150g gnocchis de pomme de terre","150g pointes d'asperges vertes","15g copeaux de parmesan","Ail","1 c.à.c huile d'olive"],
+prep:["Blanchir les asperges 3 minutes, rafraîchir et couper en tronçons.","Chauffer l'huile dans une poêle antiadhésive, faire dorer les gnocchis directement (sans bouillir) 8 min.","Ajouter l'ail écrasé et les asperges, faire sauter 2 min.","Hors du feu, parsemer de copeaux de parmesan."],
+sci:"Les gnocchis offrent une densité calorique volumétrique inférieure aux pâtes grâce à leur forte teneur en eau interne. Le parmesan concentre la saveur umami, limitant la sensation de restriction."},
+
+// ─── ÉTÉ ───
+{id:26,s:"Été",k:430,n:"Salade Niçoise authentique du patrimoine azuréen",
+ing:["1 œuf dur","80g thon au naturel","3 filets d'anchois","Tomates charnues","Poivron vert, cébettes, radis","5 olives noires de Nice","1 c.à.s huile d'olive"],
+prep:["Cuire l'œuf 9 min. Couper les tomates en quartiers, émincer le poivron vert et les radis.","Frotter le saladier avec une gousse d'ail coupée en deux.","Dresser les légumes, ajouter le thon émietté, l'œuf en quartiers, les anchois et les olives.","Assaisonner avec l'huile d'olive et un peu de vinaigre (sans pommes de terre)."],
+sci:"Le strict respect de la recette authentique (sans pommes de terre) maintient une charge glycémique très basse. Les lipides des olives et anchois modulent la cinétique d'absorption au duodénum."},
+
+{id:27,s:"Été",k:420,n:"Brochettes de poulet au citron et courgettes grillées",
+ing:["150g cubes de blanc de poulet","Jus de citron, romarin, ail","Courgettes","100g boulgour cuit"],
+prep:["Mariner les cubes de poulet dans le citron, l'ail et le romarin pendant 1h au frais.","Tailler les courgettes en épaisses rondelles. Embrocher la viande en alternant avec les courgettes.","Cuire au barbecue ou sous le gril 15 minutes en retournant régulièrement.","Servir avec le boulgour chaud ou froid."],
+sci:"La cuisson par rayonnement direct permet d'économiser les lipides de cuisson. Ces calories sont réinvesties dans le boulgour, céréale riche en vitamines du groupe B."},
+
+{id:28,s:"Été",k:400,n:"Ratatouille méridionale express et œufs pochés",
+ing:["250g ratatouille maison (tomates, courgettes, aubergines)","2 œufs","40g tranche de pain de campagne"],
+prep:["Confectionner une ratatouille en étuvant les dés de légumes d'été sans excès d'huile.","Réchauffer la portion dans une poêle. Créer deux puits dans les légumes chauds.","Y casser les œufs. Couvrir et laisser mijoter 4 minutes (blanc pris, jaune coulant).","Manger avec la tranche de pain."],
+sci:"Le volume des fibres végétales solubles de la ratatouille compense la restriction calorique. Le jaune d'œuf coulant sert de liant lipidique riche en choline, essentielle au métabolisme hépatique."},
+
+{id:29,s:"Été",k:410,n:"Salade Grecque traditionnelle et dés de pastèque",
+ing:["Tomates mûres, concombre, oignon rouge","40g Feta AOP","5 olives Lucques d'Occitanie","Origan séché","1 c.à.c huile d'olive","150g dés de pastèque fraîche"],
+prep:["Tailler les tomates et le concombre en gros cubes. Émincer l'oignon rouge.","Mélanger les légumes, ajouter la Feta en dés et les olives Lucques.","Saupoudrer d'origan et arroser d'huile d'olive.","Consommer les dés de pastèque bien frais en dessert hydratant."],
+sci:"La pastèque restaure le flux hydrique. Les olives Lucques d'Occitanie offrent des acides gras monoinsaturés de qualité supérieure, luttant contre l'inflammation systémique."},
+
+{id:30,s:"Été",k:450,n:"Sardines de Méditerranée grillées au citron",
+ing:["120g sardines fraîches écaillées et vidées","Jus de citron jaune","Grand bol de salade verte variée","100g pommes de terre cuites vapeur"],
+prep:["Disposer les sardines entières sur une grille au four ou au barbecue.","Les cuire très rapidement (3 à 4 minutes par face).","Arroser généreusement de jus de citron jaune frais.","Servir avec les pommes de terre vapeur saupoudrées de gros sel et la salade verte."],
+sci:"Les sardines entières sont des bombes nutritionnelles d'oméga-3, de calcium et de vitamine D. L'acide citrique facilite la digestion de cette matrice lipidique dense."},
+
+{id:31,s:"Été",k:420,n:"Ceviche de loup de mer aux pêches et piment doux",
+ing:["120g filet de loup frais cru","Jus de 2 citrons verts","Coriandre fraîche","½ pêche jaune d'été","30g avocat","Pointe de piment doux"],
+prep:["Couper le loup en petits dés réguliers.","Le recouvrir de jus de citron vert, réfrigérer 20 min jusqu'à ce que la chair blanchisse.","Ajouter la pêche et l'avocat en brunoise, la coriandre et le piment.","Mélanger délicatement et servir très frais dans une coupe."],
+sci:"L'acidité dénature les protéines du loup. Le gras de l'avocat tempère la capsaïcine du piment, protégeant l'intégrité de la muqueuse gastrique."},
+
+{id:32,s:"Été",k:410,n:"Bruschettas italiennes aux tomates cerises et ail",
+ing:["80g (2 grandes tranches) pain complet","150g tomates cerises concassées","30g mozzarella di bufala","1 gousse d'ail crue","Basilic"],
+prep:["Griller les tranches de pain complet.","Frotter vigoureusement la mie encore chaude avec l'ail coupé en deux.","Mélanger les tomates concassées avec le basilic ciselé, sel et poivre. Répartir sur les tartines.","Disposer la mozzarella finement tranchée ou déchirée par-dessus."],
+sci:"L'ail frotté à cru libère de l'allicine, un composé sulfuré hypotenseur. La mozzarella di bufala apporte protéines lactées à digestion lente et lipides nécessaires."},
+
+{id:33,s:"Été",k:440,n:"Taboulé oriental au poulet épicé et herbes fraîches",
+ing:["50g semoule complète crue","100g filet de poulet","Cumin, paprika","Bouquet massif de menthe et persil plat","Dés de tomates","Citron"],
+prep:["Réhydrater la semoule à l'eau froide avec le jus de citron (sans huile).","Hacher très fin la menthe et le persil (le volume d'herbes doit égaler le volume de semoule).","Ajouter les dés de tomates.","Griller le poulet enrobé de cumin et paprika à sec, le couper en dés et l'incorporer à froid."],
+sci:"Le volume d'herbes fraîches apporte des fibres insolubles et de la chlorophylle pour quasiment zéro calorie, abaissant la densité énergétique du repas."},
+
+{id:34,s:"Été",k:400,n:"Brochettes de crevettes à l'ail et ananas rôti",
+ing:["150g grosses crevettes décortiquées","2 gousses d'ail hachées","1 tranche épaisse d'ananas frais","100g riz basmati nature cuit"],
+prep:["Embrocher les crevettes et les badigeonner d'ail haché.","Saisir la tranche d'ananas et les brochettes sur une plancha très chaude (2 min par face).","Le sucre de l'ananas va caraméliser au contact de la chaleur.","Servir avec l'ananas grillé et le riz basmati."],
+sci:"Sous l'effet de la chaleur, l'ananas libère de la bromélaïne qui facilite la digestion du collagène et des protéines marines. Plat extrêmement pauvre en graisses."},
+
+{id:35,s:"Été",k:430,n:"Tacos légers aux crevettes et salsa crue de mangue",
+ing:["2 petites tortillas de maïs","100g crevettes décortiquées","¼ mangue","Oignon rouge, coriandre","Chou rouge émincé","Citron vert"],
+prep:["Préparer la salsa : couper la mangue et l'oignon rouge en brunoise, mélanger avec la coriandre et le citron vert.","Faire sauter les crevettes rapidement à la poêle.","Réchauffer les tortillas de maïs.","Garnir chaque tortilla de chou rouge, crevettes chaudes et salsa de mangue."],
+sci:"Les tortillas de maïs pur affichent un comportement glycémique supérieur à celles au blé industriel. La salsa crue apporte fraîcheur sans huiles cachées."},
+
+{id:36,s:"Été",k:390,n:"Tzatziki bowl au concombre, menthe et blanc de volaille",
+ing:["1 gros concombre","150g yaourt nature ou grec léger (0 à 2%)","Menthe fraîche","Ail haché","100g blanc de dinde froid rôti"],
+prep:["Râper grossièrement le concombre et le presser fortement pour en extraire l'eau.","Mélanger le concombre essoré avec le yaourt, l'ail, la menthe ciselée, sel et poivre.","Servir dans un bol profond.","Surmonter du blanc de dinde coupé en fines lamelles."],
+sci:"Repas ultra-hydratant idéal en canicule. L'osmolarité du plat assure une vidange gastrique millimétrée, prévenant toute sensation de lourdeur estivale."},
+
+{id:37,s:"Été",k:420,n:"Salade de melon, jambon de Parme et mozzarella",
+ing:["¼ melon type charentais","2 tranches fines de jambon de Parme","30g billes de mozzarella","Poivre noir du moulin","Basilic"],
+prep:["Couper le quart de melon en billes ou en dés.","Dégraisser les tranches de jambon (retirer le gras blanc).","Disposer melon, jambon en chiffonnade et mozzarella sur une assiette.","Poivrer généreusement et garnir de basilic (aucun sel ni huile)."],
+sci:"L'association du fructose du melon et du sel du jambon cru restaure l'équilibre électrolytique perturbé par la sudation, tout en fournissant des protéines de qualité."},
+
+{id:38,s:"Été",k:400,n:"Caviar d'aubergines express et lanières de poulet",
+ing:["1 belle aubergine","Ail, cumin en poudre","1 c.à.s huile d'olive (10g)","120g lanières de poulet","Bâtonnets de crudités (carottes/concombre)"],
+prep:["Piquer l'aubergine et la cuire au four à 200°C pendant 45 min.","Couper en deux, récupérer la pulpe. Mixer avec l'ail, le cumin, l'huile d'olive et du sel.","Poêler le poulet.","Servir le caviar d'aubergines froid avec le poulet et les crudités pour tremper."],
+sci:"Cuire l'aubergine entière avec sa peau avant le mixage limite drastiquement l'absorption lipidique, sauvant des centaines de calories."},
+
+{id:39,s:"Été",k:410,n:"Moules marinières estivales et pain complet",
+ing:["500g de moules fraîches (coquilles incluses)","Verre de vin blanc sec","1 oignon","Persil frais","40g (2 tranches) de pain complet"],
+prep:["Gratter et laver les moules. Faire suer l'oignon émincé dans une cocotte.","Ajouter le vin blanc, porter à ébullition. Jeter les moules, couvrir.","Cuire à feu vif 5 à 7 minutes en secouant jusqu'à ouverture. Ajouter le persil.","Servir avec le pain pour éponger le bouillon iodé."],
+sci:"Les mollusques bivalves offrent une densité exceptionnelle en protéines, vitamine B12, sélénium et zinc pour un coût calorique marginal. Le bouillon iodé régule la thyroïde."},
+
+{id:40,s:"Été",k:440,n:"Pâtes froides au pesto allégé et pignons de pin",
+ing:["50g pâtes sèches (penne ou fusilli)","Pesto allégé : basilic frais, 1 c.à.s huile d'olive, 10g pignons, ail, eau","Tomates cerises","80g tofu ferme"],
+prep:["Cuire les pâtes al dente, égoutter et refroidir sous l'eau froide.","Au mortier ou mixeur, broyer basilic, ail, pignons et huile en ajoutant de l'eau de cuisson pour fluidifier.","Mélanger les pâtes froides avec le pesto, les tomates cerises et les dés de tofu.","Servir bien frais."],
+sci:"Le refroidissement des pâtes cuites crée de l'amidon résistant indigeste. Ce phénomène abaisse l'apport calorique net et nourrit directement la flore colique."},
+
+{id:41,s:"Été",k:450,n:"Satay de porc maigre au barbecue et courgettes",
+ing:["120g filet mignon de porc","Sauce satay : 1 c.à.c beurre de cacahuète, sauce soja, eau ou yaourt","Courgettes","100g riz"],
+prep:["Couper le porc en cubes, les embrocher.","Diluer la purée de cacahuète avec sauce soja et eau pour une sauce fluide, badigeonner la viande.","Griller les brochettes et les courgettes au barbecue.","Servir avec le riz chaud."],
+sci:"La sauce aux arachides stratégiquement diluée conserve son pouvoir aromatique puissant sans faire exploser le compteur lipidique et calorique."},
+
+{id:42,s:"Été",k:390,n:"Gaspacho andalou authentique et œufs durs",
+ing:["250ml de gaspacho maison (tomate, poivron rouge, concombre, vinaigre, ail)","2 œufs durs","1 c.à.s huile d'olive crue"],
+prep:["Mixer finement les légumes d'été épluchés avec le vinaigre et de l'eau glacée.","Ajouter l'huile d'olive en filet à la fin du mixage.","Servir très frais.","Écaler les deux œufs durs et les couper en quartiers pour accompagner."],
+sci:"Le gaspacho non filtré conserve l'intégralité des fibres pelliculaires des légumes. Les œufs entiers assurent la plénitude protéique et lipidique nécessaire à ce repas liquide."},
+
+{id:43,s:"Été",k:440,n:"Bol méditerranéen poulet, quinoa et olives Lucques",
+ing:["100g blanc de poulet","100g quinoa blond cuit","6 olives Lucques du Languedoc","Concombre en dés","Jus de citron jaune"],
+prep:["Cuire le blanc de poulet à la vapeur ou grillé à sec, le couper en lamelles.","Dénoyauter et hacher les olives Lucques.","Mélanger le quinoa tiède ou froid, les dés de concombre, le poulet et les olives.","Arroser généreusement de jus de citron."],
+sci:"L'olive Lucques d'Occitanie possède une pulpe douce et charnue. Ce bol regroupe les trois macronutriments en proportion idéale."},
+
+{id:44,s:"Été",k:450,n:"Gnocchis One-Pot aux tomates fraîches et mozzarella",
+ing:["150g gnocchis frais","300g tomates fraîches mûres","Basilic","Oignon","30g mozzarella","1 c.à.c d'huile d'olive"],
+prep:["Faire revenir l'oignon et les tomates coupées avec l'huile d'olive. Laisser compoter.","Plonger les gnocchis directement dans cette sauce bouillonnante (sans les précuire).","Cuire par absorption à couvert pendant 5 min.","Hors du feu, déchirer la mozzarella par-dessus pour la faire fondre."],
+sci:"La cuisson par absorption permet à l'amidon des gnocchis de lier naturellement la sauce des tomates, rendant superflu l'ajout de crème ou de beurre."},
+
+{id:45,s:"Été",k:400,n:"Salade de pêches rôties, feta AOP et dinde fumée",
+ing:["1 belle pêche jaune ferme","30g de feta AOP","80g de filet de dinde fumée","Lit massif de jeunes pousses de salade","Poivre"],
+prep:["Couper la pêche en quartiers en gardant la peau.","Les saisir 1 minute par face sur une poêle très chaude sans matière grasse.","Dresser les jeunes pousses, disposer les quartiers de pêche chauds et les tranches de dinde.","Émietter la feta et poivrer."],
+sci:"Le passage de la pêche sur la chaleur intense intensifie sa sucrosité par la réaction de Maillard, créant un assaisonnement qui évite le recours aux vinaigrettes lourdes."},
+
+{id:46,s:"Été",k:420,n:"Dorade au four, tomates grappes rôties et fenouil",
+ing:["1 petite dorade (env. 150g chair nette)","Grappe de tomates cerises entières","Graines de fenouil","Fumet de poisson","Spray d'huile d'olive (env. 2g)"],
+prep:["Placer la dorade entière dans un plat à four. Inciser la peau, saupoudrer de graines de fenouil.","Disposer la grappe de tomates à côté. Verser un demi-verre de fumet au fond.","Pulvériser un léger voile d'huile d'olive.","Cuire à 200°C pendant 20 minutes."],
+sci:"La cuisson hydratée par l'évaporation du fumet empêche la dessiccation des fibres musculaires de la dorade sans noyer le poisson dans l'huile de friture."},
+
+{id:47,s:"Été",k:380,n:"Rouleaux de légumes d'été frais au thon",
+ing:["1 belle courgette droite","1 concombre","50g fromage frais 0%","80g thon au naturel en boîte","Ciboulette"],
+prep:["À la mandoline, tailler des lamelles très fines et longues dans la courgette crue et le concombre.","Mélanger le thon égoutté avec le fromage frais et la ciboulette.","Déposer une cuillère de rillettes de thon à l'extrémité d'une lamelle.","Rouler fermement. Répéter l'opération."],
+sci:"Substitution créative du wrap par un contenant végétal croquant. Résultat : repas ultra low-carb, protéiné, hydratant et rafraîchissant."},
+
+{id:48,s:"Été",k:440,n:"Gratin d'aubergines allégé à la pulpe de tomate",
+ing:["2 aubergines","Coulis de tomate nature","100g viande de bœuf hachée maigre (5% MG)","20g de gruyère râpé","Herbes de Provence"],
+prep:["Couper les aubergines en tranches et les pré-cuire à la vapeur ou micro-ondes 10 min.","Faire dorer le bœuf à sec, ajouter le coulis de tomate.","Alterner les couches d'aubergines vapeur et de sauce à la viande.","Saupoudrer de gruyère et gratiner 15 min au four."],
+sci:"Saturer la chair spongieuse de l'aubergine d'eau à la vapeur bloque physiquement l'absorption des graisses de la viande lors du gratinage final."},
+
+{id:49,s:"Été",k:410,n:"Salade d'épeautre aux poivrons grillés et chèvre frais",
+ing:["100g d'épeautre cuit","Poivrons rouges et jaunes","30g de fromage de chèvre frais","Vinaigre de Xérès"],
+prep:["Placer les poivrons entiers sous le gril du four jusqu'à ce que la peau noircisse (20 min).","Les enfermer dans un sac plastique 10 min, puis peler, épépiner et tailler en lanières.","Mélanger la chair des poivrons avec l'épeautre cuit et un trait de vinaigre.","Ajouter des morceaux de chèvre frais."],
+sci:"Le retrait de la pellicule cellulosique des poivrons grillés les rend digestes et libère leur douceur glucidique naturelle, s'accordant à la perfection avec le chèvre."},
+
+{id:50,s:"Été",k:420,n:"Poêlée de calamars persillés, ail et tomates",
+ing:["150g d'anneaux de calamar crus","2 gousses d'ail hachées","Persil plat","Dés de tomates fraîches","100g de pommes de terre grenailles"],
+prep:["Cuire les pommes de terre à l'eau ou vapeur, puis les faire sauter avec un spray d'huile.","Dans une poêle très chaude, saisir les calamars très rapidement (2 à 3 min max).","Ajouter l'ail et les dés de tomates. Parsemer de persil.","Servir ensemble."],
+sci:"Le céphalopode est l'une des protéines marines les plus maigres (moins de 2% de MG) tout en offrant un collagène structurel à mastication ferme et rassasiante."},
+
+// ─── AUTOMNE ───
+{id:51,s:"Automne",k:430,n:"Crumble d'hiver à la courge butternut et raclette",
+ing:["250g courge butternut","30g fromage à raclette","15g noisettes concassées"],
+prep:["Peler et couper la butternut en cubes. Rôtir au four avec sel et poivre 25 min à 200°C.","Placer les cubes chauds dans un ramequin.","Déposer la raclette sur le dessus, saupoudrer de noisettes.","Repasser sous le gril 3 minutes jusqu'à ce que le fromage fonde."],
+sci:"Le fondant amylacé de la butternut mime la pomme de terre en divisant les calories par deux. La portion stricte de fromage (30g) satisfait le besoin lipidique sans excès."},
+
+{id:52,s:"Automne",k:400,n:"Velouté de potimarron aux éclats de châtaignes",
+ing:["300g de potimarron bio (avec la peau)","Bouillon végétal","40g de châtaignes rôties","1 c.à.s crème légère"],
+prep:["Laver le potimarron, retirer les graines mais conserver la peau. Couper en cubes.","Plonger dans le bouillon frémissant 20 min.","Mixer finement avec la crème légère.","Servir parsemé des châtaignes émiettées."],
+sci:"La peau du potimarron décuple l'apport en fibres insolubles. Les châtaignes fournissent des glucides complexes exempts de gluten pour une satiété prolongée."},
+
+{id:53,s:"Automne",k:410,n:"Omelette forestière d'automne au chèvre",
+ing:["2 œufs entiers","150g champignons de Paris ou cèpes","30g de bûche de chèvre","½ oignon rouge","Persil frais"],
+prep:["Nettoyer et émincer les champignons.","Faire revenir l'oignon rouge et les champignons sans matière grasse jusqu'à évaporation de l'eau.","Battre les œufs, verser sur les champignons, ajouter le chèvre en morceaux.","Cuire à feu doux."],
+sci:"Les champignons apportent des fibres spécifiques (chitine) et des bêta-glucanes stimulant l'immunité. Les protéines de l'œuf stabilisent la glycémie, prévenant les fringales."},
+
+{id:54,s:"Automne",k:440,n:"Risotto aux chanterelles et pointe de bleu d'Auvergne",
+ing:["50g de riz rond","100g de chanterelles fraîches","Bouillon végétal","20g de fromage bleu (Roquefort)"],
+prep:["Faire nacrer le riz à sec. Mouiller progressivement avec le bouillon pendant 18 min.","Saisir les chanterelles à part.","En fin de cuisson, intégrer les champignons.","Hors du feu, lier avec les 20g de bleu écrasé à la fourchette."],
+sci:"La puissance aromatique extrême du fromage bleu permet d'en utiliser une quantité infime (20g) tout en parfumant intensément la totalité du riz, offrant un leurre sensoriel de richesse."},
+
+{id:55,s:"Automne",k:430,n:"Courge butternut farcie au chèvre et quinoa blond",
+ing:["½ petite butternut évidée","80g de quinoa complet","30g de fromage de chèvre","Herbes de Provence"],
+prep:["Couper la butternut en deux, retirer les graines. Quadriller la chair, cuire au four à 200°C 40 min.","Cuire le quinoa à l'eau.","Récupérer un peu de chair creusée, mélanger au quinoa et au chèvre.","Farcir la demi-courge, gratiner 5 min."],
+sci:"La courge évidée sert de contenant comestible à très faible charge calorique, tandis que le quinoa fournit tous les acides aminés essentiels à la réparation tissulaire."},
+
+{id:56,s:"Automne",k:420,n:"Soupe épaisse de lentilles corail, courge et épices",
+ing:["60g de lentilles corail sèches","150g de courge en cubes","Cumin, curcuma","1 c.à.s de lait de coco"],
+prep:["Rincer les lentilles corail. Mettre dans une casserole avec les cubes de courge et les épices.","Couvrir d'eau ou de bouillon et mijoter 20 min.","Les lentilles vont se désagréger et lier la soupe naturellement.","En fin de cuisson, ajouter le lait de coco pour l'onctuosité."],
+sci:"Le bêta-carotène de la matrice orangée s'associe au fer végétal des lentilles. Les lipides du lait de coco optimisent l'absorption des vitamines liposolubles."},
+
+{id:57,s:"Automne",k:440,n:"Pâtes complètes aux champignons forestiers et crème",
+ing:["50g de pâtes complètes (cru)","200g de champignons forestiers variés","2 c.à.s crème fraîche 15% MG","Ail, persil"],
+prep:["Cuire les pâtes al dente.","Émincer l'ail et les champignons, les faire suer fortement pour évaporer l'eau.","Baisser le feu, ajouter la crème légère, l'ail et le persil.","Mélanger cette sauce crémeuse aux pâtes égouttées."],
+sci:"Les pâtes complètes libèrent progressivement leur glucose. Le volume imposant des champignons gorgés d'eau trompe visuellement le cerveau sur la taille énergétique réelle."},
+
+{id:58,s:"Automne",k:410,n:"Croque-monsieur végétarien champignons et emmental",
+ing:["2 tranches pain de mie complet","Béchamel allégée : 100ml lait écrémé, 1 c.à.c maïzena, muscade","100g champignons de Paris","20g emmental"],
+prep:["Préparer la béchamel en faisant épaissir le lait froid avec la maïzena et la muscade.","Saisir les champignons émincés.","Monter le croque : pain, béchamel, champignons, béchamel, pain, emmental.","Dorer au four 10 min."],
+sci:"Le remplacement du jambon par des champignons augmente la teneur en fibres et réduit l'apport en sodium délétère pour le système cardiovasculaire."},
+
+{id:59,s:"Automne",k:430,n:"Tarte rustique aux champignons sans moule et œuf",
+ing:["40g pâte brisée","200g de champignons émincés","1 œuf","Herbes de Provence","Un trait de lait"],
+prep:["Étaler la pâte très finement sur un papier cuisson (pas de moule).","Disposer au centre les champignons sautés en laissant 3 cm de bord.","Rabattre grossièrement les bords sur la garniture (style rustique).","Verser l'œuf battu avec un peu de lait sur les champignons. Cuire 25 min à 190°C."],
+sci:"Étaler la pâte ultra-fine réduit mathématiquement la quantité de farine et de beurre, tout en conservant le support croustillant psycho-sensoriel."},
+
+{id:60,s:"Automne",k:400,n:"Salade tiède de betteraves rôties, feta et noix",
+ing:["200g de betteraves crues","Lit de jeunes pousses","30g de feta","10g de cerneaux de noix","Vinaigre balsamique"],
+prep:["Éplucher les betteraves, les couper en quartiers.","Rôtir au four à 200°C pendant 45 min. Laisser tiédir.","Dresser sur les jeunes pousses, ajouter la feta émiettée et les noix.","Assaisonner au vinaigre balsamique sans huile."],
+sci:"La torréfaction au four concentre les sucres naturels de la betterave, créant un contraste biochimique parfait avec l'acidité saline et lactique de la feta."},
+
+{id:61,s:"Automne",k:410,n:"Faux taboulé d'automne au chou-fleur et porc grillé",
+ing:["150g chou-fleur cru mixé en semoule","120g de côte de porc (première)","Moutarde forte","Persil"],
+prep:["Préparer le chou-fleur en semoule au mixeur.","Dégraisser soigneusement la côte de porc à cru (enlever toute la barde blanche).","Griller la viande à sec dans une poêle très chaude.","En fin de cuisson, badigeonner de moutarde forte. Servir avec la semoule végétale."],
+sci:"Repas low-carb extrême. La moutarde, quasi acalorique, relève violemment le profil aromatique des viandes maigres sans plomber le bilan énergétique."},
+
+{id:62,s:"Automne",k:420,n:"Pâtes de lentilles vertes et salade de mâche aux noix",
+ing:["50g de pâtes de farine de lentilles vertes (cru)","Poignée de champignons sautés","Grosse poignée de mâche","5 cerneaux de noix","Citron"],
+prep:["Cuire les pâtes de légumineuses (cuisson rapide, 4 à 5 min pour éviter l'effritement).","Les mélanger chaudes avec les champignons sautés à sec.","Dresser à côté une belle salade de mâche assaisonnée de citron.","Garnir de noix concassées."],
+sci:"Les pâtes de lentilles offrent un ratio protéine/glucide largement supérieur aux pâtes de blé, idéal pour la balance azotée sous restriction."},
+
+{id:63,s:"Automne",k:410,n:"Velouté de pois cassés, poireaux et œuf dur émietté",
+ing:["50g de pois cassés secs","1 gros blanc de poireau","1 œuf entier","Bouillon végétal","Thym"],
+prep:["Cuire l'œuf dur (10 min). Rincer les pois cassés. Émincer le poireau.","Réunir le poireau, les pois cassés, le thym et le bouillon.","Frémir 45 min jusqu'à écrasement total. Mixer si désiré.","Servir très chaud, surmonté de l'œuf dur finement émietté."],
+sci:"Les pois cassés représentent une matrice extrêmement dense en énergie lente et en fibres. L'œuf dur émietté ajoute une texture mâchable, indispensable pour éviter la faim post-soupe."},
+
+{id:64,s:"Automne",k:440,n:"Filet mignon à la moutarde en cocotte et champignons",
+ing:["120g filet mignon de porc","150g champignons de Paris","100g pommes de terre","1 c.à.s moutarde","1 c.à.s crème légère 15%"],
+prep:["Couper la viande en tranches épaisses. Dorer sans graisse dans une cocotte.","Ajouter les champignons émincés (ils rendent leur eau). Couvrir et mijoter 15 min.","Hors du feu, incorporer le mélange moutarde/crème.","Cuire les pommes de terre à la vapeur pour accompagner."],
+sci:"La cuisson lente en milieu humide maintient l'hydratation intramusculaire de cette viande très maigre, empêchant un résultat sec et filandreux."},
+
+{id:65,s:"Automne",k:450,n:"Magret de canard à l'orange (portion sous contrôle)",
+ing:["100g de chair de magret de canard (pesée SANS la peau)","1 orange fraîche (jus et zestes)","1 c.à.c miel","100g carottes rôties"],
+prep:["Étape cruciale : retirer intégralement la couche de graisse sous-cutanée du magret cru.","Rôtir la chair rouge à la poêle à feu vif (cuisson rosée).","Déglacer avec le jus d'orange, le zeste et le miel pour une sauce sirupeuse.","Servir nappé de sauce avec les carottes rôties."],
+sci:"Dégraisser mécaniquement le magret retire 80% de son apport calorique originel. Il ne reste que le fer héminique pur, les protéines nobles, et le plaisir du plat festif."},
+
+{id:66,s:"Automne",k:420,n:"Poisson blanc et légumes racines d'automne à la plaque",
+ing:["150g dos de cabillaud ou églefin","100g patate douce en dés","Carottes, navets en gros morceaux","Filet d'huile (3g)","Thym"],
+prep:["Disposer tous les légumes sur la plaque du four avec papier cuisson.","Vaporiser d'huile et de thym, cuire à 200°C pendant 25 min.","Sortir, déposer le poisson blanc au milieu des légumes.","Remettre au four 10 minutes pour cuire le poisson."],
+sci:"La méthode One-Pan caramélise l'extérieur des légumes racines en concentrant leur humidité. Le poisson, déposé en fin de cuisson, cuit doucement en absorbant les sucs végétaux."},
+
+{id:67,s:"Automne",k:430,n:"Tarte fine aux poires d'automne et pointe de roquefort",
+ing:["3 feuilles de pâte filo","1 belle poire (type Conférence)","20g de roquefort émietté","Lit massif de roquette"],
+prep:["Superposer les 3 feuilles de pâte filo.","Peler et trancher la poire en lamelles très fines. Disposer sur la pâte.","Enfourner à 180°C pendant 15 min.","À la sortie, parsemer de roquefort qui va fondre. Servir avec la roquette."],
+sci:"Le roquefort apporte une sapidité si intense qu'elle compense largement la taille réduite de la portion. Synergie sucrée-salée d'une grande sophistication."},
+
+{id:68,s:"Automne",k:390,n:"Quiche sans pâte aux poireaux fondants et chèvre",
+ing:["150g fondue de blancs de poireaux","2 œufs","100ml lait écrémé","Muscade","30g bûche de chèvre"],
+prep:["Bien égoutter la fondue de poireaux.","Battre les œufs avec le lait écrémé, la muscade, sel et poivre.","Disposer les poireaux au fond d'un moule en silicone. Verser l'appareil.","Déposer les rondelles de chèvre en surface. Enfourner 30 min à 180°C."],
+sci:"L'élimination de la pâte brisée économise 200 kcal de graisses saturées et glucides raffinés, sans altérer la texture du cœur du plat."},
+
+{id:69,s:"Automne",k:440,n:"Salade d'épeautre, pesto de cheddar et courges",
+ing:["80g de petit épeautre cuit","Cubes de courge grillés au four","15g de cheddar affiné","Un peu de lait","Herbes"],
+prep:["Cuire l'épeautre et griller les dés de courge au four.","Faire fondre à feu doux le cheddar râpé avec un filet de lait pour créer une sauce fromagère fluide.","Mélanger l'épeautre tiède et les courges.","Napper de cette sauce au cheddar."],
+sci:"La pointe de cheddar fondu et étirée en sauce trompe efficacement les récepteurs du circuit dopaminergique de la récompense cérébrale."},
+
+{id:70,s:"Automne",k:420,n:"Poulet rôti aux herbes d'automne et frites de panais",
+ing:["120g cuisse ou haut de cuisse (pesé SANS peau)","150g de panais","Romarin, thym","Fleur de sel"],
+prep:["Retirer la peau du poulet. Frotter la viande avec les herbes.","Peler le panais, couper en forme de frites épaisses.","Placer le poulet et les frites de panais sur une plaque au four.","Rôtir à 200°C pendant 35 à 40 minutes."],
+sci:"Le panais possède un goût suave, terreux et sucré. Son réseau de fibres insolubles favorise un fort effet rassasiant tout au long du processus digestif."},
+
+{id:71,s:"Automne",k:390,n:"Endives braisées au jambon blanc et béchamel légère",
+ing:["2 grosses endives","2 tranches de jambon blanc supérieur","Béchamel allégée : 100ml lait écrémé, 1 c.à.c maïzena"],
+prep:["Évider la base amère des endives. Les braiser à l'étouffée avec un fond de bouillon 30 min.","Égoutter et presser les endives. Les enrouler dans le jambon.","Préparer la béchamel, en napper les endives.","Gratiner 10 min."],
+sci:"Les composés phénoliques de l'endive stimulent les sécrétions biliaires, facilitant le métabolisme et le drainage global."},
+
+{id:72,s:"Automne",k:450,n:"Boudin noir aux pommes (portion ajustée et contrôlée)",
+ing:["80g de boudin noir classique","1 à 2 belles pommes (Golden ou reinette)"],
+prep:["Couper les pommes en gros quartiers (garder la peau si bio).","Les compoter à sec à feu doux et à couvert, sans eau ni beurre, jusqu'à translucidité.","Inciser la peau du boudin, le cuire à la poêle très chaude sans graisse.","Servir le boudin avec la compotée naturelle."],
+sci:"Ce plat cible les déficits en fer, fréquents dans les régimes hypocaloriques. L'absorption intestinale du fer héminique de cette charcuterie sanguine est excellente et vitale."},
+
+{id:73,s:"Automne",k:430,n:"Sauté de dinde aux marrons entiers et carottes",
+ing:["120g de blanc de dinde émincé","50g de marrons entiers (boîte ou sous vide)","150g carottes en rondelles","Bouillon clair"],
+prep:["Faire revenir la dinde dans une cocotte antiadhésive, réserver.","Cuire les rondelles de carottes dans le bouillon 15 min.","Ajouter la dinde et les marrons entiers en fin de cuisson.","Réchauffer dans le jus aromatique (attention, les marrons s'écrasent si bouillent trop)."],
+sci:"Contrairement aux oléagineux (bombes lipidiques), les marrons sont des fruits amylacés très pauvres en graisses, offrant une texture farineuse automnale incomparable."},
+
+{id:74,s:"Automne",k:410,n:"Poêlée paysanne choux de Bruxelles et lardons maigres",
+ing:["200g choux de Bruxelles","50g d'allumettes de bacon de dinde","½ oignon émincé"],
+prep:["Blanchir les choux de Bruxelles à l'eau bouillante salée 10 min, puis les couper en deux.","Faire revenir l'oignon et le bacon de dinde fumé.","Ajouter les moitiés de choux et faire sauter à feu vif.","Caraméliser les bords des légumes."],
+sci:"Les crucifères sont riches en glucosinolates, molécules protectrices cellulaires. Le bacon de dinde apporte le côté fumé réconfortant essentiel au moral."},
+
+{id:75,s:"Automne",k:420,n:"Riz complet aux cœurs d'artichauts et tomates confites",
+ing:["80g riz complet cru","100g cœurs d'artichauts (en bocal au naturel)","3 moitiés de tomates séchées (sans huile)","Basilic frais"],
+prep:["Cuire le riz complet (env. 40 min).","Rincer les cœurs d'artichauts à l'eau claire, les couper en quartiers.","Émincer les tomates séchées.","Mélanger le riz chaud avec les artichauts, les tomates, et le basilic frais déchiré."],
+sci:"L'artichaut contient de grandes quantités d'inuline prébiotique qui nourrit le microbiote intestinal, crucial pour l'extraction calorique et la régulation de l'humeur."},
+
+// ─── HIVER ───
+{id:76,s:"Hiver",k:420,n:"Brandade de cabillaud maison revisitée et allégée",
+ing:["120g de cabillaud frais (non salé)","100g pommes de terre","3 cl lait écrémé","1 gousse d'ail, thym","1 c.à.c huile d'olive (5g)","5g chapelure"],
+prep:["Éplucher et cuire les pommes de terre à l'eau avec l'ail et le thym.","Pocher le cabillaud dans cette eau aromatisée jusqu'à effritement.","Écraser les pommes de terre en ajoutant le lait écrémé et l'huile d'olive. Incorporer le poisson effeuillé.","Mettre en ramequin, saupoudrer de chapelure, gratiner."],
+sci:"L'utilisation du lait écrémé et du poisson frais permet de diviser la charge lipidique par deux par rapport à la brandade traditionnelle noyée d'huile d'olive."},
+
+{id:77,s:"Hiver",k:430,n:"Tielle Sétoise déconstruite en chausson léger",
+ing:["40g pâte à pain/pizza très fine","150g poulpe/calamar","1 c.à.s concentré tomate","Oignon, ail, vin blanc","Safran, piment"],
+prep:["Faire suer ail et oignon sans huile. Ajouter le poulpe en brunoise. Déglacer au vin blanc.","Ajouter le concentré de tomate, le safran et le piment. Mijoter 20 min.","Étaler les 40g de pâte extrêmement finement. Garnir de ragout.","Refermer en demi-lune (chausson). Cuire au four 20 min à 200°C."],
+sci:"La déconstruction en chausson à croûte millimétrique préserve l'essence iodée de la tielle classique tout en amputant massivement glucides et lipides."},
+
+{id:78,s:"Hiver",k:450,n:"Bœuf bourguignon maigre et carottes fondantes",
+ing:["120g bœuf (macreuse dégraissée)","200g carottes en rondelles","Oignons grelots, champignons","1 verre de vin rouge","1 c.à.c maïzena","Bouquet garni"],
+prep:["Dorer la viande à sec dans une cocotte en fonte. Ajouter oignons, carottes, bouquet garni.","Verser le vin rouge et du bouillon maigre.","Mijoter à feu très doux pendant 2 heures minimum.","En fin de cuisson, lier avec la maïzena diluée dans de l'eau froide (pas de beurre manié)."],
+sci:"Le mijotage lent rend les viandes maigres et dures parfaitement fondantes. L'alcool du vin s'évapore, ne laissant que les tanins antioxydants et la couleur."},
+
+{id:79,s:"Hiver",k:390,n:"Velouté soyeux de chou-fleur, pomme et Saint-Jacques",
+ing:["200g de chou-fleur","½ pomme (type Gala)","3 noix de Saint-Jacques sans corail","Bouillon végétal","Poivre noir"],
+prep:["Cuire le chou-fleur et la pomme épluchée dans le bouillon.","Mixer très finement pour une texture de velours (la pomme apporte la liaison sucrée).","Snacker les noix de Saint-Jacques 1 min par face dans une poêle très chaude à sec.","Dresser les noix sur le velouté chaud."],
+sci:"Les noix de Saint-Jacques sont des blocs de protéines pures, extrêmement pauvres en graisses. L'alliance chou-fleur/pomme adoucit les composés soufrés du chou."},
+
+{id:80,s:"Hiver",k:420,n:"Salade de chou rouge croquant aux noix et poulet",
+ing:["150g chou rouge","120g blanc de poulet rôti (froid)","15g cerneaux de noix","Vinaigrette : 1 c.à.c huile de colza, vinaigre de cidre, moutarde"],
+prep:["Émincer le chou rouge finement à la mandoline.","Le masser vigoureusement avec du sel 2 minutes pour casser la rigidité des fibres.","Assaisonner avec la vinaigrette au colza.","Disposer les tranches de poulet froid et parsemer de noix."],
+sci:"Le chou cru exige une énergie masticatoire importante, augmentant l'effet thermique du repas. L'huile de colza et les noix apportent les oméga-3 essentiels pour l'hiver."},
+
+{id:81,s:"Hiver",k:440,n:"Curry de légumes racines d'hiver et tofu soyeux",
+ing:["100g de tofu ferme ou soyeux en dés","Épices curry de Madras","2 c.à.s lait de coco allégé","200g mélange carottes/navets/poireaux","50g de riz basmati cru"],
+prep:["Cuire le riz. Faire suer les légumes d'hiver émincés dans une sauteuse.","Saupoudrer de curry et bien enrober. Ajouter un fond d'eau, mijoter.","Incorporer les dés de tofu et le lait de coco en fin de cuisson.","Servir avec le riz."],
+sci:"Les épices réchauffantes augmentent la thermogenèse post-prandiale. Ce plat en sauce offre un volume réconfortant et hautement rassasiant."},
+
+{id:82,s:"Hiver",k:380,n:"Cabillaud en potée marine et légumes racines",
+ing:["130g de dos de cabillaud","200g légumes pot-au-feu (navets, carottes, céleri, poireaux)","Clous de girofle","Bouillon végétal clair"],
+prep:["Préparer un bouillon aromatisé avec thym, laurier et clous de girofle.","Plonger les légumes en gros tronçons. Mijoter 40 min.","Baisser le feu, pocher le cabillaud 7 minutes dans le bouillon chaud.","Servir dans une assiette creuse."],
+sci:"Le céleri branche, riche en phtalides organiques, agit comme draineur hépatique sans apporter de calorie significative à la ration."},
+
+{id:83,s:"Hiver",k:450,n:"Saumon rôti sur lit de frites de carottes au four",
+ing:["120g pavé de saumon frais (avec peau)","200g de grosses carottes","Paprika fumé","Spray d'huile d'olive (2g)","Fleur de sel"],
+prep:["Tailler les carottes en bâtonnets de frites. Vaporiser d'huile, saupoudrer de paprika.","Cuire à 220°C pendant 20 min.","Sortir, placer le saumon au centre des frites.","Remettre au four 12 min."],
+sci:"La cuisson prolongée déshydrate les carottes, permettant d'exprimer leurs sucres et de caraméliser. Le gras du saumon (EPA/DHA) lubrifie les articulations en hiver."},
+
+{id:84,s:"Hiver",k:430,n:"Gratin de poireaux d'hiver au saumon et parmesan",
+ing:["200g blancs de poireaux","100g saumon frais en dés (sans peau)","1 c.à.s crème fraîche à 15%","15g parmesan râpé","Muscade"],
+prep:["Couper les poireaux en rondelles, les précuire intensément à la vapeur.","Bien les essorer. Dans un plat à gratin, mélanger poireaux fondants, dés de saumon cru et crème.","Saupoudrer de parmesan et muscade.","Gratiner au four 15 min à 200°C."],
+sci:"Le poireau est le diurétique hivernal par excellence. Associé au saumon, il forme un plat lourd en apparence mais structurellement très peu glucidique."},
+
+{id:85,s:"Hiver",k:410,n:"Soupe de poulet réconfortante à la patate douce",
+ing:["100g restes de poulet rôti effiloché (sans peau)","100g patate douce","Rondelles de carottes","Bouillon de volaille","Feuilles de coriandre fraîche"],
+prep:["Peler et couper patate douce et carottes en dés.","Les plonger dans le bouillon frémissant 20 min.","Ajouter la chair de poulet effilochée pour la réchauffer.","Servir dans un grand bol type « pho », parsemé de coriandre."],
+sci:"La patate douce, riche en provitamine A, soutient l'intégrité des muqueuses respiratoires agressées par le froid et les virus."},
+
+{id:86,s:"Hiver",k:440,n:"Salade tiède de pois chiches, avocat et légumes rôtis",
+ing:["100g pois chiches cuits (rincés)","30g avocat mûr (¼)","100g légumes d'hiver (navets, carottes) en dés","Jus de citron, cumin"],
+prep:["Rôtir les dés de légumes avec du cumin au four 25 min.","Mélanger les pois chiches avec les légumes racines tièdes.","Ajouter l'avocat en lamelles.","Arroser de jus de citron (l'avocat fond légèrement au contact de la chaleur)."],
+sci:"Les pois chiches combinent protéines végétales et fibres insolubles. L'avocat (riche en potassium) offre une onctuosité qui compense l'absence de vinaigrette."},
+
+{id:87,s:"Hiver",k:390,n:"Légumes d'hiver rôtis au sirop d'érable et bacon de dinde",
+ing:["200g mélange panais, carottes et navets","1 c.à.c sirop d'érable","50g tranches de bacon de dinde fumé"],
+prep:["Couper les racines en gros morceaux. Mélanger avec le sirop d'érable et du poivre sur une plaque.","Rôtir à 200°C pendant 30 min.","Ajouter les tranches de bacon de dinde pour les 5 dernières minutes.","Servir croustillant."],
+sci:"Le sirop d'érable (~15 kcal) offre un effet caramélisé maximal sur les papilles. Le bacon de dinde est une protéine fumée de haute densité remplaçant le lardon."},
+
+{id:88,s:"Hiver",k:430,n:"Blanquette de veau allégée aux petits légumes",
+ing:["120g de veau maigre dégraissé","Carottes, blancs de poireaux","Oignon piqué de clous de girofle","Bouquet garni","1 jaune d'œuf","1 c.à.s fromage blanc 0%","1 c.à.c jus de citron"],
+prep:["Plonger la viande dans l'eau froide, porter à ébullition et écumer.","Ajouter les légumes et le bouquet garni. Mijoter 1h30.","Pour la sauce : battre le jaune d'œuf avec le fromage blanc 0% et le citron.","Ajouter une louche de bouillon chaud en fouettant. Verser sur la viande hors du feu."],
+sci:"La substitution de la crème et du roux par un appareil jaune d'œuf/laitage écrémé conserve le nappage velouté emblématique tout en éliminant le coût lipidique."},
+
+{id:89,s:"Hiver",k:440,n:"Ramen au poulet maison et légumes croquants",
+ing:["50g nouilles de riz fines","100g blanc de poulet","1 œuf entier","Feuilles de pak-choï ou poireau émincé","Bouillon de volaille infusé au miso"],
+prep:["Chauffer le bouillon. Y plonger le poulet en tranches fines et le chou 5 minutes.","Cuire l'œuf mollet à part (6 min). Ébouillanter les nouilles 2 min.","Dans un grand bol, disposer nouilles, légumes, poulet.","Verser le bouillon brûlant. Déposer l'œuf coupé en deux au sommet."],
+sci:"Le grand volume de bouillon chaud distend l'estomac de manière fulgurante, saturant immédiatement les signaux mécaniques de faim. L'œuf mollet ajoute l'onctuosité manquante."},
+
+{id:90,s:"Hiver",k:390,n:"Salade d'endives aux oranges et éclats de noix fraîches",
+ing:["2 belles endives","1 orange (ou orange sanguine)","15g de noix décortiquées","80g de filet de dinde fumée"],
+prep:["Retirer le cœur dur des endives et les émincer.","Peler l'orange à vif, extraire les suprêmes.","Mélanger les endives, les suprêmes d'orange, les allumettes de dinde et les noix.","Utiliser le jus de l'orange comme assaisonnement. Aucune huile nécessaire."],
+sci:"L'acidité sucrée de l'orange casse biochimiquement l'amertume de l'endive. Apport massif en vitamine C, cruciale pour l'immunité hivernale."},
+
+{id:91,s:"Hiver",k:410,n:"Poireaux rôtis entiers au four et œuf mollet coulant",
+ing:["2 beaux poireaux","2 œufs","Vinaigrette allégée : 1 c.à.c moutarde, eau, vinaigre, ½ c.à.c huile de noix"],
+prep:["Laver les poireaux en gardant leur forme. Les rôtir entiers au four à 200°C pendant 30 min.","Retirer la première couche brûlée.","Cuire les œufs mollets (6 min).","Servir les poireaux tièdes fendus en deux, surmontés des œufs coulants et de la sauce moutarde."],
+sci:"La cuisson rôtie à sec concentre les sucs du poireau, le rendant sucré et fondant. Les œufs mollets constituent la part anabolique constructrice."},
+
+{id:92,s:"Hiver",k:420,n:"Chou blanc braisé, sauce crémeuse au poivre et porc",
+ing:["200g de chou blanc émincé","120g de filet de porc","1 c.à.s de crème légère 15%","Beaucoup de poivre noir concassé"],
+prep:["Braiser le chou blanc émincé à l'étouffée avec un fond de bouillon 30 min.","Saisir le filet de porc en médaillons.","Déglacer avec de l'eau, ajouter la crème légère et infuser de poivre noir.","Napper la viande et le chou de cette sauce."],
+sci:"La pipérine du poivre augmente radicalement l'absorption intestinale des nutriments et stimule les sucs gastriques favorisant la digestion des fibres du chou."},
+
+{id:93,s:"Hiver",k:410,n:"Fondue de poireaux aux crevettes et pointe de curry",
+ing:["250g de poireaux émincés","150g de crevettes décortiquées","Curry, curcuma","100g de riz complet cuit"],
+prep:["Faire fondre les poireaux dans une poêle avec couvercle et un fond d'eau, 20 min.","Saupoudrer de curry.","Ajouter les crevettes pour 3 minutes dans l'humidité des poireaux.","Servir avec le riz complet."],
+sci:"La chitine résiduelle des crevettes et les fibres dures des poireaux nettoient efficacement le tractus digestif comme un véritable balai mécanique."},
+
+{id:94,s:"Hiver",k:450,n:"Cake salé occitan aux olives vertes et Pélardon",
+ing:["Pâte : farine complète, 4 œufs, ½ verre vin blanc, ½ verre eau, levure","100g olives vertes dénoyautées","130g fromage Pélardon ou brebis émietté"],
+prep:["Mélanger les œufs, les liquides et la farine/levure sans trop battre.","Incorporer les olives et le fromage.","Verser dans un moule en silicone (pas de beurrage). Cuire 50 min à 210°C.","Couper 2 belles tranches par repas, avec un saladier de roquette."],
+sci:"La préparation sans huile excédentaire (grâce au moule silicone et au vin/eau) permet d'inclure les graisses des olives et du chèvre languedocien sans culpabilité."},
+
+{id:95,s:"Hiver",k:400,n:"Pot-au-feu de la mer (poisson blanc et légumes clairs)",
+ing:["150g de poisson à chair ferme (lieu noir ou lotte)","100g pommes de terre vapeur","Carottes, navets blancs","Oignon piqué de clous de girofle","Laurier, thym","Fumet de poisson"],
+prep:["Clarifier et faire bouillir un grand volume d'eau avec le fumet, l'oignon, le thym et le laurier.","Plonger les carottes, navets et pommes de terre entières 30 min.","Déposer le poisson en gros cubes dans le court-bouillon frémissant 6 min.","Servir dans le bouillon."],
+sci:"Les clous de girofle et les aromates diffusent des huiles essentielles anti-infectieuses dans le bouillon chaud, offrant un soutien vital en période d'épidémies."},
+
+{id:96,s:"Hiver",k:420,n:"Risotto de petit épeautre aux cèpes séchés réhydratés",
+ing:["60g de petit épeautre cru","15g de cèpes séchés","Oignon","10g de parmesan râpé","Salade de verdure"],
+prep:["Réhydrater les cèpes 30 min dans l'eau bouillante. Filtrer et conserver l'eau noire.","Faire suer l'oignon, ajouter l'épeautre.","Mouiller progressivement avec l'eau de trempage des cèpes. Cuire 40 min.","Intégrer les cèpes hachés et le parmesan."],
+sci:"L'eau de trempage des cèpes (souvent jetée à tort) est un bouillon hyper-aromatique contenant des acides aminés libres, offrant une profondeur gustative spectaculaire pour zéro calorie."},
+
+{id:97,s:"Hiver",k:430,n:"Tarte fine aux oignons caramélisés et anchois",
+ing:["40g de pâte brisée","200g d'oignons jaunes","2 c.à.s de vinaigre balsamique","5 filets d'anchois au sel (rincés)","Quelques olives noires"],
+prep:["Émincer les oignons. Les faire fondre à feu doux sans matière grasse.","Déglacer à l'eau et au vinaigre balsamique. Répéter jusqu'à caramélisation (compotée brune).","Étaler la pâte finement, garnir d'oignons, quadriller avec anchois et olives.","Cuire 20 min à 190°C."],
+sci:"En revisitant la pissaladière sans le demi-litre d'huile, l'anchois apporte l'umami marin tandis que les oignons concentrent la douceur prébiotique."},
+
+{id:98,s:"Hiver",k:410,n:"Purée de céleri-rave, noisettes et blanc de volaille",
+ing:["200g de racine de céleri-rave","Un peu de lait écrémé","120g de blanc de volaille rôti","10g de noisettes concassées grillées"],
+prep:["Éplucher le céleri-rave, le couper en cubes. Cuire à la vapeur ou à l'eau.","Écraser au presse-purée en détendant avec un trait de lait écrémé.","Poêler la volaille.","Servir la purée chaude parsemée d'éclats de noisettes torréfiées."],
+sci:"Le céleri-rave possède une charge glucidique bien inférieure à la pomme de terre. Son utilisation permet de doubler la portion purée pour le même impact calorique."},
+
+{id:99,s:"Hiver",k:400,n:"Salade d'agrumes, fenouil et lanières de saumon fumé",
+ing:["½ pamplemousse rose","½ orange sanguine","½ bulbe de fenouil","60g de saumon fumé","1 c.à.c huile d'olive (5g)"],
+prep:["Couper le fenouil en lanières très fines à la mandoline.","Peler les agrumes à vif et détacher les suprêmes.","Tailler le saumon fumé en allumettes.","Dresser les végétaux, répartir le poisson, arroser de jus d'agrumes et d'huile d'olive."],
+sci:"L'acidité des agrumes d'hiver dissout la sensation lourde de la matrice lipidique du saumon fumé. Synergie magistrale entre vitamine C et acides gras."},
+
+{id:100,s:"Hiver",k:420,n:"Galette de flocons de sarrasin et œuf miroir aux épinards",
+ing:["40g de flocons de sarrasin purs","Eau, sel","2 œufs entiers","Grosse poignée d'épinards frais"],
+prep:["Mélanger les flocons de sarrasin avec un peu d'eau chaude et du sel pour former un appareil épais.","Étaler à la spatule dans une poêle antiadhésive chaude, cuire des deux côtés.","Faire fondre les épinards.","Déposer les épinards sur la galette avec les 2 œufs cuits au plat."],
+sci:"Les glucides lents à très faible index glycémique du sarrasin garantissent une glycémie parfaitement plate jusqu'au lendemain matin."},
         ];
 
+        // ══════════════════════════════════════════════════
+        //  TAG GENERATION & DISH ENRICHMENT
+        // ══════════════════════════════════════════════════
         const generateTags = (name) => {
             const tags = [];
             const lower = name.toLowerCase();
             if (/(poulet|dinde|volaille|canard)/.test(lower)) tags.push("Volaille");
-            if (/(saumon|truite|cabillaud|loup|dorade|sardines|ceviche|crevettes|moules|calamars|anchois|saint-jacques|poisson)/.test(lower)) tags.push("Produits de la mer");
+            if (/(saumon|truite|cabillaud|loup|dorade|sardines|ceviche|crevettes|moules|calamars|anchois|saint-jacques|poisson|lieu)/.test(lower)) tags.push("Mer");
             if (/(porc|veau|bœuf|jambon|bacon|boudin|lardons)/.test(lower)) tags.push("Viande");
             if (/(tofu|quinoa|lentilles|pois|fèves|végétarien)/.test(lower)) tags.push("Végétarien");
             if (/(œuf|omelette|frittata|œufs|pancakes)/.test(lower)) tags.push("Œufs");
-            if (/(pâtes|riz|risotto|gnocchis|taboulé|nouilles|épeautre|galette)/.test(lower)) tags.push("Glucides complexes");
-            if (/(salade|velouté|soupe|gaspacho|bouillon)/.test(lower)) tags.push("Léger & Hydratant");
-            if (/(chèvre|feta|pélardon|mozzarella|parmesan|fromage|roquefort|bleu|raclette)/.test(lower)) tags.push("Fromage");
-            if (/(poireau|chou|courge|aubergine|carotte|asperge|épinards)/.test(lower)) tags.push("Légumes");
+            if (/(pâtes|riz|risotto|gnocchis|taboulé|nouilles|épeautre|galette|semoule)/.test(lower)) tags.push("Féculents");
+            if (/(salade|velouté|soupe|gaspacho|bouillon|bowl)/.test(lower)) tags.push("Léger");
+            if (/(chèvre|feta|pélardon|mozzarella|parmesan|fromage|roquefort|bleu|raclette|emmental|cheddar)/.test(lower)) tags.push("Fromage");
             return tags.slice(0, 3);
         };
 
+        const seasonEmoji = { Printemps: "🌱", Été: "☀️", Automne: "🍂", Hiver: "❄️" };
+        const seasonColor = { Printemps: "#8e9b72", Été: "#e5b96b", Automne: "#d48c70", Hiver: "#7b9cad" };
+
         const dishes = rawData.map(d => {
-            // Image locale pré-générée (voir generate_images.py)
-            // Fallback automatique vers Pollinations si le fichier n'existe pas
-            const localImageUrl = `images/dish-${d.id}.jpg`;
-            const fallbackUrl = `https://gen.pollinations.ai/image/${encodeURIComponent(d.n + ', photographie culinaire, très réaliste, restaurant gastronomique, 4k')}?width=600&height=450&model=flux`;
-            
-            return { 
-                id: d.id, 
-                name: d.n, 
-                season: d.s, 
-                kcal: d.k, 
-                tags: generateTags(d.n), 
-                image: localImageUrl,
-                fallback: fallbackUrl
+            const exactPrompt = encodeURIComponent(`${d.n}, photographie culinaire, très réaliste, restaurant gastronomique, 4k`);
+            const exactImageUrl = `https://image.pollinations.ai/prompt/${exactPrompt}?width=600&height=450&nologo=true`;
+            return {
+                ...d,
+                name: d.n, season: d.s, kcal: d.k,
+                tags: generateTags(d.n),
+                image: exactImageUrl,
+                ingredients: d.ing,
+                preparation: d.prep,
+                science: d.sci,
             };
         });
 
-        // --- ICONS ---
-        const SearchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
-        const DicesIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><path d="M9 9h.01"></path><path d="M15 9h.01"></path><path d="M9 15h.01"></path><path d="M15 15h.01"></path></svg>;
-        const CloseIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
-        const SparkleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path></svg>;
-        const LoaderIcon = () => <svg className="animate-spin" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>;
+        // ══════════════════════════════════════════════════
+        //  ICONS
+        // ══════════════════════════════════════════════════
+        const SearchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
+        const DicesIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="M9 9h.01"/><path d="M15 9h.01"/><path d="M9 15h.01"/><path d="M15 15h.01"/></svg>;
+        const CloseIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+        const ChevronDown = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>;
+        const FlameIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 23c-4.97 0-9-3.58-9-8 0-3.18 2.56-6.37 5-8.5.36-.31.92-.03.88.44-.24 2.56.75 3.84 1.62 4.56.27.22.68.04.72-.31.23-2.01 1.36-4.49 3.78-6.69.36-.33.92-.04.88.44-.18 2.14.35 3.56 1.12 4.56.27.35.83.15.83-.28V6c0-.39.44-.62.76-.4C20.03 7.18 21 10.2 21 12.5c0 5.73-4.03 10.5-9 10.5z"/></svg>;
+        const LeafIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.5 19 1c1 2 2 4.5 2 8 0 5.5-4.78 11-10 11Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>;
+        const CheckCircle = ({checked}) => checked ? <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="#8e9b72" stroke="white" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4" strokeLinecap="round" strokeLinejoin="round"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d4d0c8" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/></svg>;
 
-        const fetchWithRetry = async (url, options, retries = 5, delay = 1000) => {
-            try {
-                const res = await fetch(url, options);
-                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                return await res.json();
-            } catch (e) {
-                if (retries > 0) {
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    return fetchWithRetry(url, options, retries - 1, delay * 2);
-                }
-                throw e;
-            }
-        };
-
-        // --- COMPONENTS ---
-        const DishCard = ({ dish, isFeatured = false, onClick }) => {
+        // ══════════════════════════════════════════════════
+        //  DISH CARD
+        // ══════════════════════════════════════════════════
+        const DishCard = ({ dish, onClick }) => {
             const [isLoaded, setIsLoaded] = useState(false);
-
             return (
-                <div onClick={onClick} className={`group flex flex-col bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-500 border border-stone-100 ${isFeatured ? 'scale-100' : 'animate-fade-in cursor-pointer hover:-translate-y-1'}`}>
-                    
+                <div onClick={onClick} className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-500 border border-stone-100 cursor-pointer hover:-translate-y-1 active:scale-[0.98]">
                     <div className="relative w-full aspect-[4/3] bg-stone-100 overflow-hidden img-skeleton">
-                        
-                        {/* L'image exacte, chargée en lazy loading pour les performances */}
-                        <img 
-                            src={dish.image} 
-                            alt={dish.name} 
-                            loading="lazy"
-                            onLoad={() => setIsLoaded(true)}
-                            onError={(e) => { if (dish.fallback && e.target.src !== dish.fallback) { e.target.src = dish.fallback; } }}
-                            className={`absolute z-10 inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
-                        />
-                        
-                        <div className="absolute z-20 inset-0 bg-gradient-to-t from-stone-900/50 via-transparent to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-                        <div className="absolute z-30 top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-semibold tracking-wider text-stone-800 shadow-sm pointer-events-none">
-                            {dish.kcal} KCAL
+                        <img src={dish.image} alt={dish.name} loading="lazy" onLoad={() => setIsLoaded(true)}
+                            className={`absolute z-10 inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${isLoaded ? 'opacity-100' : 'opacity-0'}`} />
+                        <div className="absolute z-20 inset-0 bg-gradient-to-t from-stone-900/50 via-transparent to-transparent opacity-60 pointer-events-none" />
+                        <div className="absolute z-30 top-3 right-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wider text-stone-800 flex items-center gap-1">
+                            <FlameIcon /> {dish.kcal}
                         </div>
+                        <div className="absolute z-30 top-3 left-3 text-lg">{seasonEmoji[dish.season]}</div>
                     </div>
-
-                    <div className="p-6 flex flex-col flex-grow">
-                        <div className="text-xs font-bold tracking-widest uppercase text-terracotta mb-2">{dish.season}</div>
-                        <h3 className="font-serif text-2xl leading-tight mb-4 flex-grow text-stone-900 group-hover:text-terracotta transition-colors">{dish.name}</h3>
-                        <div className="flex flex-wrap gap-2 mt-auto">
+                    <div className="p-4 flex flex-col flex-grow">
+                        <h3 className="font-serif text-lg leading-snug mb-2 flex-grow text-stone-900 group-hover:text-terracotta transition-colors line-clamp-2">{dish.name}</h3>
+                        <div className="flex flex-wrap gap-1.5 mt-auto">
                             {dish.tags.map(tag => (
-                                <span key={tag} className="px-3 py-1 bg-stone-50 text-stone-600 text-xs rounded-full border border-stone-100">{tag}</span>
+                                <span key={tag} className="px-2 py-0.5 bg-stone-50 text-stone-500 text-[10px] rounded-full border border-stone-100 font-medium">{tag}</span>
                             ))}
                         </div>
                     </div>
@@ -273,129 +700,125 @@
             );
         };
 
-        const DishModal = ({ dish, onClose, isRandomInsight = false }) => {
-            const [recipe, setRecipe] = useState(null);
-            const [loading, setLoading] = useState(false);
-            const [error, setError] = useState(null);
-            const [customRequest, setCustomRequest] = useState("");
-            const [isCustomizing, setIsCustomizing] = useState(false);
+        // ══════════════════════════════════════════════════
+        //  RECIPE MODAL — Full-screen mobile cooking app
+        // ══════════════════════════════════════════════════
+        const RecipeModal = ({ dish, onClose }) => {
+            const [activeTab, setActiveTab] = useState("ingredients");
+            const [checkedIngs, setCheckedIngs] = useState({});
+            const [imgLoaded, setImgLoaded] = useState(false);
+            const [showScience, setShowScience] = useState(false);
 
-            useEffect(() => { setRecipe(null); setError(null); setCustomRequest(""); setIsCustomizing(false); }, [dish]);
+            useEffect(() => {
+                document.body.style.overflow = 'hidden';
+                setCheckedIngs({}); setActiveTab("ingredients"); setShowScience(false); setImgLoaded(false);
+                return () => { document.body.style.overflow = ''; };
+            }, [dish]);
 
-            const fetchRecipe = async (modifier = null) => {
-                setLoading(true); setError(null);
-                try {
-                    const apiKey = ""; 
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-                    
-                    let promptText = `Tu es un chef gastronomique et diététicien clinicien. Crée la recette détaillée pour le plat "${dish.name}". Le repas complet doit faire environ ${dish.kcal} calories.`;
-                    if (modifier) promptText += `\n\nCONTRAINTE REQUISE : Le client a demandé la modification suivante : "${modifier}". Adapte impérativement la recette et les ingrédients pour respecter cette demande, tout en gardant l'apport autour de ${dish.kcal} kcal. Mentionne le changement dans l'astuce.`;
-
-                    const payload = {
-                        contents: [{ parts: [{ text: promptText }] }],
-                        generationConfig: {
-                            responseMimeType: "application/json",
-                            responseSchema: {
-                                type: "OBJECT",
-                                properties: {
-                                    ingredients: { type: "ARRAY", items: { type: "STRING" } },
-                                    instructions: { type: "ARRAY", items: { type: "STRING" } },
-                                    astuce: { type: "STRING" }
-                                },
-                                required: ["ingredients", "instructions", "astuce"]
-                            }
-                        }
-                    };
-
-                    const data = await fetchWithRetry(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-                    const contentText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (!contentText) throw new Error("Réponse vide");
-                    setRecipe(JSON.parse(contentText));
-                } catch (e) {
-                    console.error(e);
-                    setError("Impossible de générer la recette pour le moment. Veuillez réessayer.");
-                } finally {
-                    setLoading(false); setIsCustomizing(false);
-                }
-            };
+            const toggleIng = (i) => setCheckedIngs(prev => ({ ...prev, [i]: !prev[i] }));
+            const checkedCount = Object.values(checkedIngs).filter(Boolean).length;
 
             if (!dish) return null;
 
             return (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-                    <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md" onClick={onClose}></div>
-                    <div className="relative w-full max-w-3xl bg-white rounded-[2rem] shadow-2xl overflow-hidden animate-slide-up my-auto max-h-[90vh] flex flex-col">
-                        <button onClick={onClose} className="absolute top-4 right-4 z-30 p-2 bg-white/50 backdrop-blur-md rounded-full text-stone-800 hover:bg-white transition-colors">
+                <div className="fixed inset-0 z-50 bg-white animate-slide-up-full flex flex-col" style={{ paddingTop: 'var(--sat)', paddingBottom: 'var(--sab)' }}>
+                    
+                    {/* ── HERO IMAGE ── */}
+                    <div className="relative flex-shrink-0 w-full" style={{ height: '44vw', maxHeight: '280px', minHeight: '180px' }}>
+                        <div className="absolute inset-0 bg-stone-200 img-skeleton">
+                            <img src={dish.image} alt={dish.name} onLoad={() => setImgLoaded(true)}
+                                className={`w-full h-full object-cover transition-opacity duration-500 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`} />
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                        
+                        {/* Close button */}
+                        <button onClick={onClose} className="absolute top-3 left-3 z-30 p-2 bg-black/30 backdrop-blur-md rounded-full text-white hover:bg-black/50 transition-colors">
                             <CloseIcon />
                         </button>
-                        <div className="flex-shrink-0"><DishCard dish={dish} isFeatured={true} /></div>
-                        <div className="p-6 sm:p-10 bg-white overflow-y-auto flex-grow">
-                            {!recipe && !loading && !error && (
-                                <div className="text-center py-4">
-                                    {isRandomInsight && <p className="font-sans text-stone-500 text-sm mb-6">Une sélection parfaitement équilibrée pour votre objectif de 1400 kcal journaliers.</p>}
-                                    <button onClick={() => fetchRecipe()} className="w-full sm:w-auto px-8 py-4 bg-stone-900 text-stone-50 rounded-2xl font-semibold tracking-wide hover:bg-stone-800 transition-colors flex items-center justify-center gap-3 mx-auto shadow-lg">
-                                        <SparkleIcon /> Générer la Recette Détaillée (IA)
-                                    </button>
+
+                        {/* Title overlay on image */}
+                        <div className="absolute bottom-0 left-0 right-0 p-4 z-20">
+                            <h2 className="font-serif text-white text-xl sm:text-2xl leading-tight drop-shadow-lg">{dish.name}</h2>
+                        </div>
+                    </div>
+
+                    {/* ── INFO BAR ── */}
+                    <div className="flex-shrink-0 px-4 py-3 flex items-center gap-3 border-b border-stone-100 bg-white">
+                        <span className="nutri-pill bg-orange-50 text-orange-700"><FlameIcon /> {dish.kcal} kcal</span>
+                        <span className="nutri-pill bg-green-50 text-green-700"><LeafIcon /> {dish.season}</span>
+                        <div className="ml-auto flex gap-1.5">
+                            {dish.tags.map(tag => (
+                                <span key={tag} className="px-2 py-0.5 bg-stone-50 text-stone-500 text-[10px] rounded-full border border-stone-100 font-medium hidden sm:inline-block">{tag}</span>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* ── TABS ── */}
+                    <div className="flex-shrink-0 flex border-b border-stone-100 bg-white px-4">
+                        <button onClick={() => setActiveTab("ingredients")}
+                            className={`flex-1 py-3 text-sm font-sans text-center transition-all ${activeTab === "ingredients" ? "tab-active" : "tab-inactive"}`}>
+                            Ingrédients {checkedCount > 0 && <span className="ml-1 text-[10px] bg-olive text-white px-1.5 py-0.5 rounded-full">{checkedCount}/{dish.ingredients.length}</span>}
+                        </button>
+                        <button onClick={() => setActiveTab("preparation")}
+                            className={`flex-1 py-3 text-sm font-sans text-center transition-all ${activeTab === "preparation" ? "tab-active" : "tab-inactive"}`}>
+                            Préparation
+                        </button>
+                    </div>
+
+                    {/* ── SCROLLABLE CONTENT ── */}
+                    <div className="flex-1 overflow-y-auto recipe-modal-scroll bg-stone-50/50">
+                        <div className="p-4 pb-8 max-w-2xl mx-auto">
+
+                            {/* INGREDIENTS TAB */}
+                            {activeTab === "ingredients" && (
+                                <div className="space-y-2 animate-fade-in">
+                                    {dish.ingredients.map((ing, i) => (
+                                        <button key={i} onClick={() => toggleIng(i)}
+                                            className={`w-full flex items-center gap-3 p-3 bg-white rounded-xl border transition-all duration-200 text-left active:scale-[0.98] ${checkedIngs[i] ? 'border-olive/30 bg-olive/5' : 'border-stone-100 hover:border-stone-200'}`}>
+                                            <CheckCircle checked={!!checkedIngs[i]} />
+                                            <span className={`text-sm font-sans flex-1 transition-all duration-200 ${checkedIngs[i] ? 'ing-checked' : 'text-stone-800'}`}>{ing}</span>
+                                        </button>
+                                    ))}
                                 </div>
                             )}
-                            {loading && (
-                                <div className="flex flex-col items-center justify-center py-12 text-terracotta">
-                                    <LoaderIcon /><p className="mt-4 font-serif text-xl italic text-stone-600">Conception culinaire en cours...</p>
+
+                            {/* PREPARATION TAB */}
+                            {activeTab === "preparation" && (
+                                <div className="space-y-4 animate-fade-in">
+                                    {dish.preparation.map((step, i) => (
+                                        <div key={i} className="flex gap-3 p-3 bg-white rounded-xl border border-stone-100">
+                                            <div className="step-num bg-terracotta/10 text-terracotta flex-shrink-0 mt-0.5">{i + 1}</div>
+                                            <p className="text-sm text-stone-700 leading-relaxed font-sans">{step}</p>
+                                        </div>
+                                    ))}
                                 </div>
                             )}
-                            {error && (
-                                <div className="text-center py-8 text-red-500"><p>{error}</p><button onClick={() => fetchRecipe(customRequest || null)} className="mt-4 underline text-stone-800 hover:text-terracotta">Réessayer</button></div>
-                            )}
-                            {recipe && !loading && (
-                                <div className="animate-fade-in text-left">
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                        <div className="md:col-span-1">
-                                            <h4 className="font-serif text-2xl font-semibold mb-4 text-olive border-b border-stone-100 pb-2">Ingrédients</h4>
-                                            <ul className="space-y-3">
-                                                {recipe.ingredients.map((ing, i) => (
-                                                    <li key={i} className="text-sm text-stone-700 flex items-start gap-2"><span className="text-terracotta mt-0.5">•</span><span>{ing}</span></li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                        <div className="md:col-span-2">
-                                            <h4 className="font-serif text-2xl font-semibold mb-4 text-terracotta border-b border-stone-100 pb-2">Préparation</h4>
-                                            <ol className="space-y-4">
-                                                {recipe.instructions.map((step, i) => (
-                                                    <li key={i} className="text-sm text-stone-700 leading-relaxed flex items-start gap-3">
-                                                        <span className="font-serif font-bold text-stone-300 text-lg leading-none mt-0.5">{i+1}.</span><span>{step}</span>
-                                                    </li>
-                                                ))}
-                                            </ol>
-                                        </div>
+
+                            {/* ── SCIENCE SECTION (always shown at bottom) ── */}
+                            <div className="mt-6">
+                                <button onClick={() => setShowScience(!showScience)}
+                                    className="w-full flex items-center justify-between p-3 bg-white rounded-xl border border-stone-100 hover:border-stone-200 transition-all active:scale-[0.98]">
+                                    <span className="text-sm font-semibold text-stone-700 flex items-center gap-2">
+                                        🧬 Mécanisme physiologique
+                                    </span>
+                                    <span className={`transition-transform duration-200 text-stone-400 ${showScience ? 'rotate-180' : ''}`}><ChevronDown /></span>
+                                </button>
+                                {showScience && (
+                                    <div className="mt-2 p-4 bg-gradient-to-br from-stone-50 to-stone-100/50 rounded-xl border border-stone-100 animate-fade-in">
+                                        <p className="text-sm text-stone-600 leading-relaxed font-sans italic">{dish.science}</p>
                                     </div>
-                                    <div className="mt-8 p-5 bg-stone-50 border border-stone-100 rounded-2xl shadow-inner">
-                                        <p className="text-sm text-stone-800"><span className="font-bold text-mustard">💡 Astuce du Chef :</span> {recipe.astuce}</p>
-                                    </div>
-                                    <div className="mt-8 pt-8 border-t border-stone-100">
-                                        <h4 className="font-serif text-xl mb-4 text-stone-900">Adapter cette recette</h4>
-                                        <div className="flex flex-col sm:flex-row gap-3">
-                                            <input 
-                                                type="text" placeholder="Ex: Rendre vegan, sans gluten..." 
-                                                className="flex-grow px-5 py-3 border border-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-olive/30 focus:border-olive transition-all"
-                                                value={customRequest} onChange={e => setCustomRequest(e.target.value)} disabled={isCustomizing}
-                                                onKeyDown={e => e.key === 'Enter' && customRequest && !isCustomizing && fetchRecipe(customRequest)}
-                                            />
-                                            <button 
-                                                onClick={() => { setIsCustomizing(true); fetchRecipe(customRequest); }} disabled={!customRequest || isCustomizing}
-                                                className="px-6 py-3 bg-olive text-white rounded-xl text-sm font-medium hover:bg-[#7a865f] disabled:opacity-50 transition-colors flex items-center justify-center gap-2 flex-shrink-0"
-                                            >
-                                                {isCustomizing ? <LoaderIcon /> : <SparkleIcon />} {isCustomizing ? "Adaptation..." : "Adapter (IA)"}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
+
                         </div>
                     </div>
                 </div>
             );
         };
 
+        // ══════════════════════════════════════════════════
+        //  APP
+        // ══════════════════════════════════════════════════
         const App = () => {
             const [searchQuery, setSearchQuery] = useState("");
             const [activeSeason, setActiveSeason] = useState("Tous");
@@ -413,50 +836,61 @@
 
             return (
                 <div className="min-h-screen relative pb-24 sm:pb-12">
-                    <header className="glass-panel sticky top-0 z-40 pt-12 pb-6 px-6 sm:px-12">
-                        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+                    <header className="glass-panel sticky top-0 z-40 pt-12 pb-5 px-4 sm:px-12">
+                        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                             <div>
-                                <h2 className="text-sm font-bold tracking-[0.2em] text-olive uppercase mb-2">Occitanie Diététique</h2>
-                                <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl text-stone-900 leading-none">
+                                <h2 className="text-[10px] font-bold tracking-[0.2em] text-olive uppercase mb-1.5">Occitanie Diététique</h2>
+                                <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl text-stone-900 leading-none">
                                     L'Architecture<br/><span className="italic text-terracotta">du Déficit.</span>
                                 </h1>
                             </div>
-                            <p className="font-sans text-stone-500 max-w-xs text-sm sm:text-right">100 repas cliniquement modélisés entre 400 et 450 kcal pour une restriction optimale.</p>
+                            <p className="font-sans text-stone-500 max-w-xs text-xs sm:text-right leading-relaxed">100 repas cliniquement modélisés entre 380 et 450 kcal.</p>
                         </div>
                     </header>
-                    <main className="max-w-7xl mx-auto px-6 sm:px-12 pt-8">
-                        <div className="flex flex-col lg:flex-row gap-6 mb-12">
+
+                    <main className="max-w-7xl mx-auto px-4 sm:px-12 pt-6">
+                        <div className="flex flex-col lg:flex-row gap-4 mb-8">
                             <div className="relative flex-grow">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-stone-400"><SearchIcon /></div>
-                                <input type="text" placeholder="Rechercher par ingrédient, nom, mot-clé (ex: Saumon, Végétarien)..." className="w-full pl-12 pr-4 py-4 bg-white border border-stone-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-olive/20 focus:border-olive transition-all font-sans text-stone-800 placeholder-stone-400" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400"><SearchIcon /></div>
+                                <input type="text" placeholder="Rechercher un plat, ingrédient, tag..." 
+                                    className="w-full pl-11 pr-4 py-3.5 bg-white border border-stone-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-olive/20 focus:border-olive transition-all font-sans text-sm text-stone-800 placeholder-stone-400"
+                                    value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
                             </div>
-                            <div className="flex overflow-x-auto no-scrollbar gap-3 pb-2 lg:pb-0 items-center">
+                            <div className="flex overflow-x-auto no-scrollbar gap-2 pb-1 lg:pb-0 items-center">
                                 {seasons.map(season => (
-                                    <button key={season} onClick={() => setActiveSeason(season)} className={`whitespace-nowrap px-6 py-3.5 rounded-2xl font-medium transition-all duration-300 ${activeSeason === season ? 'bg-stone-900 text-stone-50 shadow-md' : 'bg-white text-stone-600 border border-stone-200 hover:border-stone-300 hover:bg-stone-50'}`}>{season}</button>
+                                    <button key={season} onClick={() => setActiveSeason(season)}
+                                        className={`whitespace-nowrap px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${activeSeason === season ? 'bg-stone-900 text-stone-50 shadow-md' : 'bg-white text-stone-600 border border-stone-200 hover:border-stone-300'}`}>
+                                        {season !== "Tous" ? seasonEmoji[season] + " " : ""}{season}
+                                    </button>
                                 ))}
                             </div>
                         </div>
+
                         {filteredDishes.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
+                            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
                                 {filteredDishes.map((dish, index) => (
-                                    <div key={dish.id} style={{ animationDelay: `${index * 50}ms` }} className="animate-fade-in opacity-0">
-                                        <DishCard dish={dish} onClick={() => setDishModal({ dish, isRandom: false })} />
+                                    <div key={dish.id} style={{ animationDelay: `${index * 30}ms` }} className="animate-fade-in opacity-0">
+                                        <DishCard dish={dish} onClick={() => setDishModal(dish)} />
                                     </div>
                                 ))}
                             </div>
                         ) : (
                             <div className="py-24 text-center">
-                                <p className="font-serif text-3xl text-stone-400 mb-2">Aucun plat ne correspond à vos critères.</p>
-                                <button onClick={() => {setSearchQuery(''); setActiveSeason('Tous');}} className="text-terracotta underline font-medium">Réinitialiser la recherche</button>
+                                <p className="font-serif text-2xl text-stone-400 mb-2">Aucun plat trouvé.</p>
+                                <button onClick={() => { setSearchQuery(''); setActiveSeason('Tous'); }} className="text-terracotta underline font-medium text-sm">Réinitialiser</button>
                             </div>
                         )}
                     </main>
-                    <div className="fixed bottom-6 right-6 sm:bottom-10 sm:right-10 z-40">
-                        <button onClick={() => setDishModal({ dish: dishes[Math.floor(Math.random() * dishes.length)], isRandom: true })} className="group flex items-center justify-center gap-3 bg-terracotta text-white px-6 py-4 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 hover:bg-[#c47c61] transition-all duration-300">
-                            <DicesIcon /><span className="font-semibold tracking-wide hidden sm:block">Inspiration</span>
+
+                    {/* FAB Inspiration */}
+                    <div className="fixed bottom-6 right-4 sm:bottom-10 sm:right-10 z-40">
+                        <button onClick={() => setDishModal(dishes[Math.floor(Math.random() * dishes.length)])}
+                            className="group flex items-center justify-center gap-2 bg-terracotta text-white px-5 py-3.5 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 transition-all duration-300">
+                            <DicesIcon /><span className="font-semibold tracking-wide text-sm hidden sm:block">Inspiration</span>
                         </button>
                     </div>
-                    {dishModal && <DishModal dish={dishModal.dish} isRandomInsight={dishModal.isRandom} onClose={() => setDishModal(null)} />}
+
+                    {dishModal && <RecipeModal dish={dishModal} onClose={() => setDishModal(null)} />}
                 </div>
             );
         };
